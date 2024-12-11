@@ -14,5 +14,5 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * - Include Pulse NFTs to provide benefits to user that own it.
  */
 contract Pulse is Ownable {
-        constructor() Ownable(msg.sender) {}
+        constructor() payable Ownable(msg.sender)  {}
 }
