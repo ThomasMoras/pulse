@@ -12,5 +12,4 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract PulseNFT is ERC721, Ownable {
         constructor() ERC721("Pulse NFT", "PNFT") Ownable(msg.sender) {}
 
-
 }
