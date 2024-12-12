@@ -1,10 +1,9 @@
 "use client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import { config } from "@/lib/wagmi.config";
 import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import React from "react";
-import { config } from "../lib/wagmi.config";
+import { config } from "@/lib/wagmi.config";
 
 const queryClient = new QueryClient();
 

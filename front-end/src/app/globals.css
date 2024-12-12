@@ -86,6 +86,19 @@ body {
   @apply text-4xl mb-4;
 }
 
+.uniform-button {
+  background-color: #1a73e8;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.uniform-button:hover {
+  background-color: #135ba1;
+}
+
 @layer base {
   * {
     @apply border-border;

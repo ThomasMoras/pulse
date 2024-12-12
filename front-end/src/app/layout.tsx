@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 // import { Web3Provider } from "@/contexts/web3-provider";
-import Layout from "../components/shared/Layout";
-import { Web3Provider } from "./contexts/web3-provider";
+import Layout from "@/components/shared/Layout";
+import { Web3Provider } from "@/contexts/web3-provider";
+import { Toaster } from "@/components/ui/toaster";
 // import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = localFont({
@@ -35,7 +36,7 @@ export default function RootLayout({
         <Web3Provider>
           <Layout>{children}</Layout>
         </Web3Provider>
-        {/* <Toaster /> */}
+        <Toaster />
       </body>
     </html>
   );
