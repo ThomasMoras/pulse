@@ -45,8 +45,8 @@ contract Pulse is Ownable {
     event Match();
     event Evaluate();
 
-    function hasSoulBoundToken(address _addr) external returns (bool) {
-        return pulseSBT.hasSoulBoundToken(_addr);
+    function hasSoulBoundToken(address _address) external view returns (bool) {
+        return pulseSBT.hasSoulBoundToken(_address);
     }
 
     function mintSoulBoundToken(
