@@ -3,6 +3,7 @@ pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IPulseSBT.sol";
+import "./SBTMetaData.sol";
 
 /**
  * @title Pulse
@@ -58,7 +59,7 @@ contract Pulse is Ownable {
         string memory _localisation,
         string memory _hobbies,
         string memory _ipfsImageHash
-    ) public onlyPulsePartner {
+    ) public onlyPulseUser {
         uint256 tokenId = pulseSBT.mintSoulBoundToken(
             _recipient,
             _firstName,
@@ -69,7 +70,12 @@ contract Pulse is Ownable {
             _hobbies,
             _ipfsImageHash
         );
-        // emit TokenMinted(_recipient, tokenId);
+    }
+
+    function getTokenMetadataByUser(
+        address user
+    ) external view returns (TokenMetadata memory) {
+        return pulseSBT.getTokenMetadataByUser(user);
     }
 
     function like() external {}

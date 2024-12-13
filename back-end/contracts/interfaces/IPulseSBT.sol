@@ -2,6 +2,7 @@
 pragma solidity 0.8.28;
 
 import "../enum/GenderType.sol";
+import "../SBTMetaData.sol";
 
 interface IPulseSBT {
     function mintSoulBoundToken(
@@ -16,4 +17,8 @@ interface IPulseSBT {
     ) external returns (uint256);
 
     function hasSoulBoundToken(address user) external view returns (bool);
+
+    function getTokenMetadataByUser(
+        address user
+    ) external view returns (TokenMetadata memory);
 }

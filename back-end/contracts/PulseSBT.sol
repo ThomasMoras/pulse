@@ -4,6 +4,7 @@ pragma solidity 0.8.28;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./enum/GenderType.sol";
+import "./SBTMetaData.sol";
 
 /**
  * @title Pulse SoulBond Token Contract
@@ -14,20 +15,6 @@ contract PulseSBT is ERC721, Ownable {
     uint256 private _tokenIds;
     address public pulseContractAddress;
 
-    // Struct to store additional token metadata
-    struct TokenMetadata {
-        uint256 id;
-        string firstName;
-        string lastName;
-        uint8 age;
-        Gender gender;
-        string localisation;
-        string hobbies;
-        uint note;
-        string ipfsHash;
-        uint256 issuedAt;
-        address issuer;
-    }
     // Mapping to store token metadata by user address
     mapping(address => TokenMetadata) private _tokenMetadataByUser;
 

@@ -3,43 +3,9 @@ import { ethers, network } from "hardhat";
 import { expect, assert } from "chai";
 import { PulseSBT } from "../../typechain-types";
 import { beforeEach } from "mocha";
+import { Gender, user1Data, user2Data, user3Data } from "./CommonData";
 
 describe("PulseSBT", function () {
-    enum Gender {
-        Male,
-        Female,
-        NonBinary,
-        Other,
-        Undisclosed,
-    }
-
-    const user1Data = {
-        firstName: "FirstName1",
-        lastName: "LastName1",
-        age: 26,
-        gender: Gender.Male,
-        localisation: "Lyon",
-        hobbies: "Tennis",
-    };
-
-    const user2Data = {
-        firstName: "FirstName2",
-        lastName: "LastName2",
-        age: 32,
-        gender: Gender.Female,
-        localisation: "Paris",
-        hobbies: "Running",
-    };
-
-    const user3Data = {
-        firstName: "FirstName3",
-        lastName: "LastName3",
-        age: 19,
-        gender: Gender.Undisclosed,
-        localisation: "Toulouse",
-        hobbies: "Drawing",
-    };
-
     let sbtContract: PulseSBT;
     let pulseSignerImpersonated: any;
     let owner: any;
@@ -167,7 +133,7 @@ describe("PulseSBT", function () {
     }
 
     describe("Deployment", function () {
-        it("Should deploy the smart sbtContract and the owner is correct", async () => {
+        it("Should deploy sbt contract and check if owner is correct", async () => {
             const { sbtContract, owner, user1, user2, user3 } =
                 await loadFixture(fixture);
             const contractOwner = await sbtContract.owner(); // Supposant que vous avez une fonction owner() dans votre contrat
@@ -273,7 +239,6 @@ describe("PulseSBT", function () {
                 user3,
             } = await loadFixture(fixtureWithMints));
         });
-        console.log(user1);
         it("Should verify SBT ownership", async () => {
             assert((await sbtContract.hasSoulBoundToken(user1)) === true);
             assert((await sbtContract.hasSoulBoundToken(user2)) === true);
@@ -447,13 +412,13 @@ describe("PulseSBT", function () {
             } = await loadFixture(fixtureWithMints));
         });
 
-        it("Should revert transfer, SBT can not be trasnfered", async () => {
+        it("Should revert transfer, SBT can not be transfered", async () => {
             await expect(
                 sbtContract.connect(user1).transferFrom(user1, user2, 1),
             ).to.be.revertedWith("SoulBound Tokens are non-transferable");
         });
 
-        it("Should revert transfer, SBT can not be trasnfered", async () => {
+        it("Should revert transfer, SBT can not be transfered", async () => {
             await expect(
                 sbtContract.connect(user1).approve(user1, 1),
             ).to.be.revertedWith("SoulBound Tokens can not be approved");
