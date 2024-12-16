@@ -20,7 +20,6 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleAvatarClick = () => {
-    console.log(isDropdownOpen);
     setIsDropdownOpen(!isDropdownOpen);
   };
 
@@ -44,12 +43,12 @@ const Navbar = () => {
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="mt-2">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Billing</DropdownMenuItem>
-                <DropdownMenuItem>Team</DropdownMenuItem>
-                <DropdownMenuItem>Subscription</DropdownMenuItem>
+                <DropdownMenuItem>Mon profil</DropdownMenuItem>
+                <DropdownMenuItem>Mes avantages</DropdownMenuItem>
+                {/* <DropdownMenuItem>Team</DropdownMenuItem>
+                <DropdownMenuItem>Subscription</DropdownMenuItem> */}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
