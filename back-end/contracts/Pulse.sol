@@ -16,10 +16,9 @@ contract Pulse is Ownable {
     uint8 public constant SUPER_LIKE_PER_DAY = 3;
     address public pulseSBTAddress;
     IPulseSBT public pulseSBT;
-
-    // mapping sur le chat
-
-    // mapping sur les events crée
+    mapping(address => bool) isRegistred;
+    mapping(address => bool) isPartner;
+    mapping(address => address) hasLiked;
 
     constructor(address _pulseSBTAddress) payable Ownable(msg.sender) {
         pulseSBTAddress = _pulseSBTAddress;
@@ -28,57 +27,67 @@ contract Pulse is Ownable {
 
     // Modifier for specific user, that can create event, sponsorship some activities
     modifier onlyPulsePartner() {
-        require(true, "Only pulse partner can call this function");
+        require(
+            isPartner[msg.sender] == true,
+            "Only a pulse partner can call this function"
+        );
         _;
     }
 
     // Modifier for pulse user, necessary to forbid external call (directly from smart contract)
     modifier onlyPulseUser() {
-        require(true, "Only pulse user can call this function");
+        require(
+            isRegistred[msg.sender] == true,
+            "Only a registered user can call this function"
+        );
         _;
     }
 
-    event AccountCreate();
-    event AccountRemove();
-    event ProfilUpdated();
-    event Like();
-    event NotLike();
-    event Match();
-    event Evaluate();
+    event AccountCreate(address _adress);
+    event AccountRemove(address _adress);
+    event ProfilUpdated(address _adress);
+    event Like(address _sender, address _receiver);
+    event NotLike(address _sender, address _receiver);
+    event SuperLike(address _sender, address _receiver);
+    event Match(address _addr1, address _addr2);
+    event Evaluate(address _sender, address _receiver);
+    event CreateEvent(address _recipient);
+    event JointEvent(address _recipient);
 
     function hasSoulBoundToken(address _address) external view returns (bool) {
         return pulseSBT.hasSoulBoundToken(_address);
     }
 
-    function mintSoulBoundToken(
+    function createAccount(
         address _recipient,
-        string memory _firstName,
-        string memory _lastName,
-        uint8 _age,
-        Gender _gender,
-        string memory _localisation,
-        string memory _hobbies,
-        string memory _ipfsImageHash
-    ) public onlyPulseUser {
-        uint256 tokenId = pulseSBT.mintSoulBoundToken(
-            _recipient,
-            _firstName,
-            _lastName,
-            _age,
-            _gender,
-            _localisation,
-            _hobbies,
-            _ipfsImageHash
-        );
+        SBTMetaData memory _data
+    ) public {
+        uint256 tokenId = pulseSBT.mintSoulBoundToken(_recipient, _data);
+        isRegistred[_recipient] = true;
+        emit AccountCreate(_recipient);
+    }
+
+    function updateAccount() external onlyPulseUser returns (bool) {
+        return true;
+    }
+
+    function removeAccount() external onlyPulseUser returns (bool) {
+        return true;
     }
 
     function getTokenMetadataByUser(
         address user
-    ) external view returns (TokenMetadata memory) {
-        return pulseSBT.getTokenMetadataByUser(user);
+    ) external view returns (SBTMetaData memory) {
+        return pulseSBT.getSBTMetaDataByUser(user);
     }
 
-    function like() external {}
+    function doLike(address _sender) external onlyPulseUser {}
 
-    function notLike() external {}
+    function doNotLike(address _sender) external onlyPulseUser {}
+
+    function doSuperLike(address _sender) external onlyPulseUser {}
+
+    function joinEvent(address _sender) external onlyPulseUser {}
+
+    function createEvent(address _sender) external onlyPulsePartner {}
 }

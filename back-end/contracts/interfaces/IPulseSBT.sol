@@ -6,19 +6,18 @@ import "../SBTMetaData.sol";
 
 interface IPulseSBT {
     function mintSoulBoundToken(
-        address recipient,
-        string memory firstName,
-        string memory lastName,
-        uint8 age,
-        Gender gender,
-        string memory localisation,
-        string memory hobbies,
-        string memory ipfsImageHash
+        address _recipient,
+        SBTMetaData calldata _data
     ) external returns (uint256);
 
-    function hasSoulBoundToken(address user) external view returns (bool);
+    function updateTokenMetadata(
+        address _recipient,
+        SBTMetaData calldata _data
+    ) external returns (uint256);
 
-    function getTokenMetadataByUser(
-        address user
-    ) external view returns (TokenMetadata memory);
+    function hasSoulBoundToken(address _recipient) external view returns (bool);
+
+    function getSBTMetaDataByUser(
+        address _recipient
+    ) external view returns (SBTMetaData memory);
 }

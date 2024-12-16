@@ -1,17 +1,20 @@
-// Ignition script for deploying multiple contracts on Hardhat
+// ignition/modules/Deploy.ts
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-module.exports = buildModule("MultiContractDeployment", (m) => {
-    const pulseSBT = m.contract("PulseSBT", []);
+module.exports = buildModule("PulseDeployment", (m) => {
+    // Déployer PulseSBT
+    const pulseSBT = m.contract("PulseSBT");
 
-    const pulseMain = m.contract("Pulse", [pulseSBT]);
+    // Déployer Pulse en passant l'adresse de PulseSBT
+    const pulse = m.contract("Pulse", [
+        pulseSBT.address, // Passer l'adresse de PulseSBT
+    ]);
 
-    // Deploy the third contract without dependencies
-    // const contractC = m.contract("ContractC");
+    // Configurer l'adresse de Pulse dans PulseSBT
+    m.call(pulseSBT, "setPulseAddress", [pulse.address]);
 
-    // Link contracts if needed
-    // For example, setting ContractA's address in ContractC
-    // m.call(contractC, "setContractA", [contractA]);
-
-    return { pulseMain, pulseSBT };
+    return {
+        pulseSBT,
+        pulse,
+    };
 });
