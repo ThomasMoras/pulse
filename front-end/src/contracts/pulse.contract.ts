@@ -275,6 +275,11 @@ export const pulseContract = {
               "type": "uint8",
             },
             {
+              "internalType": "enum Gender[]",
+              "name": "interestedBy",
+              "type": "uint8[]",
+            },
+            {
               "internalType": "string",
               "name": "localisation",
               "type": "string",
@@ -403,6 +408,11 @@ export const pulseContract = {
               "internalType": "enum Gender",
               "name": "gender",
               "type": "uint8",
+            },
+            {
+              "internalType": "enum Gender[]",
+              "name": "interestedBy",
+              "type": "uint8[]",
             },
             {
               "internalType": "string",

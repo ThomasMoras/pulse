@@ -3,13 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,25 +22,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { pulseContract } from "@/contracts/pulse.contract";
-import { writeContract } from "viem/actions";
 import { useContract } from "@/hooks/useContract";
 import { useContext, useState } from "react";
 import { DataContext } from "@/contexts/data-provider";
 import { useAccount } from "wagmi";
-import { CalendarIcon } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
-import ImageCropUploader from "./ImageCropUploaderProps";
+import ImageCropUploader from "../utils/ImageCropUploaderProps";
 import { SBTMetaData } from "@/type/data_type";
 import { Gender } from "@/type/data_type";
-import { FancyMultiSelect } from "./FancySelect";
-import DatetimePicker, { DatePicker } from "./DatePicker";
+import { FancyMultiSelect } from "../utils/FancySelect";
+import { useRouter } from "next/navigation";
+
+const genderEnumValues = Object.values(Gender); // Utilisation de Object.values pour obtenir un tableau des valeurs de l'énum
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -51,13 +42,9 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Invalid email address.",
   }),
-  gender: z.enum(["MALE", "FEMALE", "NON_BINARY", "OTHER", "UNDISCLOSED"], {
+  gender: z.enum(genderEnumValues, {
     required_error: "Veuillez sélectionner un genre",
   }),
-  // birthday: z.date({
-  //   required_error: "Please select a date and time",
-  //   invalid_type_error: "That's not a date!",
-  // }),
   birthday: z
     .date({
       required_error: "Veuillez sélectionner une date valide.",
@@ -83,6 +70,7 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
     refetchBalance();
     //setDepositAmount("");
   });
+  const router = useRouter(); // Initialiser le routeur
 
   const [sbtMetaData, setSbtMetaData] = useState<SBTMetaData>({
     id: 1,
@@ -104,6 +92,7 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
     firstName: string;
     email: string;
     gender: "MALE" | "FEMALE" | "NON_BINARY" | "OTHER" | "UNDISCLOSED";
+    interestedBy: Gender[];
     birthday: Date;
     image?: File;
     age: number;
@@ -124,8 +113,9 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
       const genderNumber = genderMap[data.gender];
 
       const imageUrl = data.image ? URL.createObjectURL(data.image) : "";
+
       const today = new Date();
-      const age =
+      const calculedAge =
         today.getFullYear() -
         data.birthday.getFullYear() -
         (today.getMonth() > data.birthday.getMonth() ||
@@ -138,8 +128,9 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
       const sbtMetaData = {
         firstName: data.firstName,
         email: data.email,
-        age: data.age,
+        age: calculedAge,
         gender: genderNumber,
+        interestedBy: data.interestedBy,
         localisation: data.localisation,
         hobbies: data.hobbies,
         note: data.note,
@@ -147,6 +138,8 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
         issuedAt: Date.now(), // Date de création
         issuer: address, // Adresse de l'émetteur (peut être l'utilisateur connecté)
       };
+
+      console.log(sbtMetaData);
 
       writeContract({
         ...pulseContract,
@@ -163,6 +156,7 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
           },
         ],
       });
+      router.push("/dashboard"); // Remplacez "/dashboard" par la page cible
     }
   };
 
@@ -171,10 +165,10 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
     defaultValues: {
       firstName: "",
       email: "",
-      gender: "MALE",
       birthday: new Date(),
-      image: undefined,
+      gender: "MALE",
       interestedBy: [],
+      image: undefined,
     },
   });
 
@@ -190,16 +184,12 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
           const completeData = {
             ...data,
             firstName: data.firstName, // Assuming username is the first name for simplicity
-            age: 0, // Placeholder value, should be replaced with actual age logic
             localisation: "", // Placeholder value, should be replaced with actual localisation logic
             hobbies: [], // Placeholder value, should be replaced with actual hobbies logic
             note: 0, // Placeholder value, should be replaced with actual note logic
             ipfsHashs: [], // Placeholder value, should be replaced with actual ipfsHashs logic
           };
-          console.log(
-            "Données complètes prêtes à être envoyées :",
-            completeData
-          );
+          console.log("Données complètes prêtes à être envoyées :", completeData);
 
           createAccount(completeData);
         })}
@@ -273,11 +263,11 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="MALE">Homme</SelectItem>
-                  <SelectItem value="FEMALE">Femme</SelectItem>
-                  <SelectItem value="NON_BINARY">Non binaire</SelectItem>
-                  <SelectItem value="OTHER">Autre</SelectItem>
-                  <SelectItem value="UNDISCLOSED">Non déclaré</SelectItem>
+                  <SelectItem value={Gender.Male.toString()}>Homme</SelectItem>
+                  <SelectItem value={Gender.Female.toString()}>Femme</SelectItem>
+                  <SelectItem value={Gender.NonBinary.toString()}>Non binaire</SelectItem>
+                  <SelectItem value={Gender.Other.toString()}>Autre</SelectItem>
+                  <SelectItem value={Gender.Undisclosed.toString()}>Non déclaré</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -292,10 +282,7 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
             <FormItem>
               <FormLabel>Intéressé(e) par</FormLabel>
               <FormControl>
-                <FancyMultiSelect
-                  value={field.value}
-                  onChange={field.onChange}
-                />
+                <FancyMultiSelect value={field.value} onChange={field.onChange} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -324,9 +311,7 @@ export function Profil({ firstConnection }: { firstConnection: boolean }) {
         />
 
         <div className="flex justify-center pt-2">
-          <Button type="submit">
-            {firstConnection ? "Création du compte" : "Mise à jour"}
-          </Button>
+          <Button type="submit">{firstConnection ? "Création du compte" : "Mise à jour"}</Button>
         </div>
       </form>
     </Form>

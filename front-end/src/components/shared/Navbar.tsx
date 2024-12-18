@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useState } from "react";
+import Link from "next/link";
 
 const Navbar = () => {
   const { isConnected } = useAccount();
@@ -45,7 +46,9 @@ const Navbar = () => {
               <DropdownMenuContent className="mt-2">
                 <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Mon profil</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link href={"/profil"}>Mon profil</Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem>Mes avantages</DropdownMenuItem>
                 {/* <DropdownMenuItem>Team</DropdownMenuItem>
                 <DropdownMenuItem>Subscription</DropdownMenuItem> */}

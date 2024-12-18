@@ -1,11 +1,16 @@
 "use client";
 
-import Connected from "@/components/shared/Connected";
+import Dashboard from "@/components/shared/Dashboard";
 import NotConnected from "@/components/shared/NotConnected";
+import { UserProvider } from "@/contexts/user-context";
 import { useAccount } from "wagmi";
 
 export default function Home() {
   const { isConnected } = useAccount();
 
-  return <>{isConnected ? <Connected /> : <NotConnected />}</>;
+  return (
+    <UserProvider>
+      <>{isConnected ? <Dashboard /> : <NotConnected />}</>
+    </UserProvider>
+  );
 }
