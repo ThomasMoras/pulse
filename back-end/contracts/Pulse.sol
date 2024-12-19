@@ -44,8 +44,8 @@ contract Pulse is Ownable {
     }
 
     event AccountCreate(address _adress);
+    event AccountUpdated(address _adress);
     event AccountRemove(address _adress);
-    event ProfilUpdated(address _adress);
     event Like(address _sender, address _receiver);
     event NotLike(address _sender, address _receiver);
     event SuperLike(address _sender, address _receiver);
@@ -61,21 +61,25 @@ contract Pulse is Ownable {
     function createAccount(
         address _recipient,
         SBTMetaData memory _data
-    ) public {
+    ) external {
         uint256 tokenId = pulseSBT.mintSoulBoundToken(_recipient, _data);
         isRegistred[_recipient] = true;
         emit AccountCreate(_recipient);
     }
 
-    function updateAccount() external onlyPulseUser returns (bool) {
-        return true;
+    function updateAccount(
+        address _recipient,
+        SBTMetaData memory _data
+    ) external {
+        uint256 tokenId = pulseSBT.updateTokenMetadata(_recipient, _data);
+        emit AccountUpdated(_recipient);
     }
 
     function removeAccount() external onlyPulseUser returns (bool) {
         return true;
     }
 
-    function getTokenMetadataByUser(
+    function getAccount(
         address user
     ) external view returns (SBTMetaData memory) {
         return pulseSBT.getSBTMetaDataByUser(user);
