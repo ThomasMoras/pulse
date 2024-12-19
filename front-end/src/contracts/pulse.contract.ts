@@ -67,6 +67,19 @@ export const pulseContract = {
         {
           "indexed": false,
           "internalType": "address",
+          "name": "_adress",
+          "type": "address",
+        },
+      ],
+      "name": "AccountUpdated",
+      "type": "event",
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
           "name": "_recipient",
           "type": "address",
         },
@@ -180,19 +193,6 @@ export const pulseContract = {
         },
       ],
       "name": "OwnershipTransferred",
-      "type": "event",
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "_adress",
-          "type": "address",
-        },
-      ],
-      "name": "ProfilUpdated",
       "type": "event",
     },
     {
@@ -380,7 +380,7 @@ export const pulseContract = {
           "type": "address",
         },
       ],
-      "name": "getTokenMetadataByUser",
+      "name": "getAccount",
       "outputs": [
         {
           "components": [
@@ -558,15 +558,82 @@ export const pulseContract = {
       "type": "function",
     },
     {
-      "inputs": [],
-      "name": "updateAccount",
-      "outputs": [
+      "inputs": [
         {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool",
+          "internalType": "address",
+          "name": "_recipient",
+          "type": "address",
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256",
+            },
+            {
+              "internalType": "string",
+              "name": "firstName",
+              "type": "string",
+            },
+            {
+              "internalType": "string",
+              "name": "email",
+              "type": "string",
+            },
+            {
+              "internalType": "uint8",
+              "name": "age",
+              "type": "uint8",
+            },
+            {
+              "internalType": "enum Gender",
+              "name": "gender",
+              "type": "uint8",
+            },
+            {
+              "internalType": "enum Gender[]",
+              "name": "interestedBy",
+              "type": "uint8[]",
+            },
+            {
+              "internalType": "string",
+              "name": "localisation",
+              "type": "string",
+            },
+            {
+              "internalType": "string[]",
+              "name": "hobbies",
+              "type": "string[]",
+            },
+            {
+              "internalType": "uint256",
+              "name": "note",
+              "type": "uint256",
+            },
+            {
+              "internalType": "string[]",
+              "name": "ipfsHashs",
+              "type": "string[]",
+            },
+            {
+              "internalType": "uint256",
+              "name": "issuedAt",
+              "type": "uint256",
+            },
+            {
+              "internalType": "address",
+              "name": "issuer",
+              "type": "address",
+            },
+          ],
+          "internalType": "struct SBTMetaData",
+          "name": "_data",
+          "type": "tuple",
         },
       ],
+      "name": "updateAccount",
+      "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function",
     },

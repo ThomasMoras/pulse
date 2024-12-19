@@ -3,8 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useAccount } from "wagmi";
-import { useState } from "react";
+import { useAccount, useReadContract } from "wagmi";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,29 +26,11 @@ import {
 
 import { pulseContract } from "@/contracts/pulse.contract";
 import { useContract } from "@/hooks/useContract";
-
 import ImageCropUploader from "../utils/ImageCropUploaderProps";
 import { FancyMultiSelect } from "../utils/FancySelect";
 import { DatePicker } from "../utils/DatePicker";
-import { useUser } from "@/contexts/user-context";
 import { Gender, SBTMetaData } from "@/types";
-
-// Utilitaire pour calculer l'âge en respectant les contraintes int8 de Solidity
-const calculateSafeAge = (birthday: Date): number => {
-  const today = new Date();
-  const calculatedAge =
-    today.getFullYear() -
-    birthday.getFullYear() -
-    (today.getMonth() > birthday.getMonth() ||
-    (today.getMonth() === birthday.getMonth() && today.getDate() >= birthday.getDate())
-      ? 0
-      : 1);
-
-  // Limiter l'âge entre 0 et 127 (contraintes int8)
-  return Math.min(Math.max(calculatedAge, 0), 127);
-};
-
-// Schéma de validation Zod
+import { useRouter } from "next/navigation";
 const formSchema = z.object({
   firstName: z.string().min(2, {
     message: "Le prénom doit avoir au moins 2 caractères.",
@@ -75,62 +57,98 @@ const formSchema = z.object({
     .default([]),
 });
 
-// Type pour les données de formulaire
 type FormData = z.infer<typeof formSchema>;
 
-export function CreateAccount() {
-  const { setIsAccountCreated } = useUser();
+const calculateSafeAge = (birthday: Date): number => {
+  const today = new Date();
+  const calculatedAge =
+    today.getFullYear() -
+    birthday.getFullYear() -
+    (today.getMonth() > birthday.getMonth() ||
+    (today.getMonth() === birthday.getMonth() && today.getDate() >= birthday.getDate())
+      ? 0
+      : 1);
+
+  return Math.min(Math.max(calculatedAge, 0), 127);
+};
+
+export function EditProfile() {
+  const router = useRouter();
   const { address } = useAccount();
-  //const router = useRouter();
+  const [sbtMetaData, setSbtMetaData] = useState<SBTMetaData>();
+  const [isLoading, setIsLoading] = useState(true);
 
-  // État pour stocker les métadonnées du compte
-  const [sbtMetaData, setSbtMetaData] = useState<SBTMetaData>({
-    id: 0,
-    firstName: "",
-    email: "",
-    age: 0,
-    gender: Gender.Male,
-    interestedBy: [],
-    localisation: "",
-    hobbies: [],
-    note: 0,
-    ipfsHashs: [],
-    issuedAt: Date.now(),
-    issuer: address || "0x0",
+  const handleBack = () => {
+    console.log("retour !!");
+    router.push("/");
+  };
+
+  // Lecture du profil utilisateur
+  const { data: userProfil } = useReadContract({
+    abi: pulseContract.abi,
+    address: pulseContract.address,
+    functionName: "getAccount",
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+    },
   });
 
-  // Hook de contrat personnalisé
-  const { writeContract } = useContract(() => {
-    setIsAccountCreated(true);
-  });
-
-  // Configuration du formulaire
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       firstName: "",
       email: "",
       birthday: new Date(),
-      gender: Gender.Male,
+      gender: Gender.Undisclosed,
       interestedBy: [],
-      image: undefined,
     },
   });
 
-  // Gestion du téléchargement d'image
+  // Mise à jour des données du profil
+  useEffect(() => {
+    console.log(userProfil);
+    if (userProfil) {
+      setSbtMetaData(userProfil);
+      setIsLoading(false);
+    }
+  }, [userProfil]);
+
+  // Mise à jour du formulaire quand les données sont chargées
+  useEffect(() => {
+    if (sbtMetaData) {
+      form.reset({
+        firstName: sbtMetaData.firstName,
+        email: sbtMetaData.email,
+        birthday: new Date(Date.now() - sbtMetaData.age * 365 * 24 * 60 * 60 * 1000),
+        gender: sbtMetaData.gender,
+        interestedBy: sbtMetaData.interestedBy.map((gender) => ({
+          value: Gender[gender].toString(),
+          label: Gender[gender],
+        })),
+      });
+    }
+  }, [sbtMetaData, form]);
+
   const handleImageCropped = (croppedFile: File) => {
     form.setValue("image", croppedFile);
   };
 
-  // Convertir un genre en nombre
   const convertGenderToNumber = (gender: Gender): number => {
     return gender;
   };
 
-  // Préparer les données du compte
+  const { writeContract } = useContract(() => {
+    // Callback après mise à jour réussie
+  });
+
   const prepareAccountData = (formData: FormData): SBTMetaData => {
+    if (!sbtMetaData) {
+      throw new Error("Données du profil non chargées");
+    }
+
     return {
-      id: 0,
+      ...sbtMetaData,
       firstName: formData.firstName,
       email: formData.email,
       age: calculateSafeAge(formData.birthday),
@@ -138,24 +156,16 @@ export function CreateAccount() {
       interestedBy: formData.interestedBy.map(
         (interest) => Gender[interest.value as keyof typeof Gender]
       ),
-      localisation: "",
-      hobbies: [],
-      note: 0,
-      ipfsHashs: [],
       issuedAt: Date.now(),
-      issuer: address || "0x0",
     };
   };
 
-  // Créer le compte
-  const createAccount = async (sbtData: SBTMetaData) => {
+  const updateAccount = async (sbtData: SBTMetaData) => {
     if (!address) return;
 
     try {
-      // Mettre à jour l'état local
       setSbtMetaData(sbtData);
 
-      // Conversion précise pour le contrat
       const contractData = {
         id: BigInt(sbtData.id),
         firstName: sbtData.firstName,
@@ -171,31 +181,26 @@ export function CreateAccount() {
         issuer: sbtData.issuer as `0x${string}`,
       };
 
-      // Écrire dans le contrat
       writeContract({
         ...pulseContract,
-        functionName: "createAccount",
+        functionName: "updateAccount",
         args: [address, contractData],
       });
     } catch (error) {
-      console.error("Échec de la création du compte :", error);
+      console.error("Échec de la mise à jour du compte :", error);
     }
   };
+
+  if (isLoading) {
+    return <div>Chargement du profil...</div>;
+  }
 
   return (
     <>
       <div className="flex items-center mb-5">
         <div className="flex-grow border-t border-gray-300"></div>
         <div className="flex-shrink-0 mx-4">
-          <h1 className="text-xl text-center">Création du profil</h1>
-          {/* 
-          <svg class="h-8 w-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fill-rule="evenodd"
-              d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1zm-5 8.274l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L5 10.274zm10 0l-.818 2.552c.25.112.526.174.818.174.292 0 .569-.062.818-.174L15 10.274z"
-              clip-rule="evenodd"
-            />
-          </svg> */}
+          <h1 className="text-xl text-center">Modifier le profil</h1>
         </div>
         <div className="flex-grow border-t border-gray-300"></div>
       </div>
@@ -203,11 +208,11 @@ export function CreateAccount() {
         <form
           onSubmit={form.handleSubmit((data) => {
             const completeData = prepareAccountData(data);
-            createAccount(completeData);
+            updateAccount(completeData);
           })}
           className="space-y-4"
         >
-          {/* Champ Prénom */}
+          {/* Les champs de formulaire restent identiques */}
           <FormField
             control={form.control}
             name="firstName"
@@ -222,7 +227,6 @@ export function CreateAccount() {
             )}
           />
 
-          {/* Champ Email */}
           <FormField
             control={form.control}
             name="email"
@@ -237,7 +241,6 @@ export function CreateAccount() {
             )}
           />
 
-          {/* Champ Date de naissance */}
           <FormField
             control={form.control}
             name="birthday"
@@ -257,7 +260,6 @@ export function CreateAccount() {
             )}
           />
 
-          {/* Champ Genre */}
           <FormField
             control={form.control}
             name="gender"
@@ -286,7 +288,6 @@ export function CreateAccount() {
             )}
           />
 
-          {/* Champ Intérêts */}
           <FormField
             control={form.control}
             name="interestedBy"
@@ -301,7 +302,6 @@ export function CreateAccount() {
             )}
           />
 
-          {/* Champ Image de profil */}
           <FormField
             control={form.control}
             name="image"
@@ -321,10 +321,13 @@ export function CreateAccount() {
               </FormItem>
             )}
           />
-
-          {/* Bouton de soumission */}
-          <div className="flex justify-center pt-2">
-            <Button type="submit">Créer mon compte</Button>
+          <div className="flex justify-center items-center pt-2 space-x-2">
+            <Button className="bg-rose-400 hover:bg-rose-600" type="submit">
+              Mettre à jour mon profil
+            </Button>
+            <Button className="bg-gray-400 hover:bg-gray-600" type="button" onClick={handleBack}>
+              Retour
+            </Button>
           </div>
         </form>
       </Form>

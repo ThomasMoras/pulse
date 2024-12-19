@@ -4,14 +4,9 @@ import * as React from "react";
 import { X } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import {
-  Command,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
-import { Gender } from "@/type/data_type";
+import { Gender } from "@/types";
 import { useCallback } from "react";
 import { useState } from "react";
 import { useRef } from "react";
@@ -47,10 +42,7 @@ interface FancyMultiSelectProps {
   onChange?: (value: Genders[]) => void;
 }
 
-export function FancyMultiSelect({
-  value,
-  onChange,
-}: FancyMultiSelectProps = {}) {
+export function FancyMultiSelect({ value, onChange }: FancyMultiSelectProps = {}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Genders[]>(value || []);
@@ -84,17 +76,12 @@ export function FancyMultiSelect({
     }
   }, []);
 
-  const selectables = GENDERS.filter(
-    (g) => !selected.some((s) => s.value === g.value)
-  );
+  const selectables = GENDERS.filter((g) => !selected.some((s) => s.value === g.value));
 
   //console.log(selectables, selected, inputValue);
 
   return (
-    <Command
-      onKeyDown={handleKeyDown}
-      className="overflow-visible bg-transparent"
-    >
+    <Command onKeyDown={handleKeyDown} className="overflow-visible bg-transparent">
       <div className="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
         <div className="flex flex-wrap gap-1">
           {selected.map((Genders) => {
