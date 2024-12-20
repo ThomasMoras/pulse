@@ -2,155 +2,133 @@
 
 import * as React from "react";
 import { X } from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
-import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-import { Command as CommandPrimitive } from "cmdk";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Gender } from "@/types";
-import { useCallback } from "react";
-import { useState } from "react";
-import { useRef } from "react";
-
-type Genders = Record<"value" | "label", string>;
 
 const GENDERS = [
-  {
-    value: Gender.Male.toString(),
-    label: "Homme",
-  },
-  {
-    value: Gender.Female.toString(),
-    label: "Femme",
-  },
-  {
-    value: Gender.NonBinary.toString(),
-    label: "Non binaire",
-  },
-  {
-    value: Gender.Other.toString(),
-    label: "Autre",
-  },
-  {
-    value: Gender.Undisclosed.toString(),
-    label: "Non déclaré",
-  },
-] satisfies Genders[];
+  { value: Gender.Male, label: "Homme" },
+  { value: Gender.Female, label: "Femme" },
+  { value: Gender.NonBinary, label: "Non binaire" },
+  { value: Gender.Other, label: "Autre" },
+  { value: Gender.Undisclosed, label: "Non déclaré" },
+] as const;
 
-// Add props interface
 interface FancyMultiSelectProps {
-  value?: Genders[];
-  onChange?: (value: Genders[]) => void;
+  value?: Gender[];
+  onChange?: (value: Gender[]) => void;
 }
 
-export function FancyMultiSelect({ value, onChange }: FancyMultiSelectProps = {}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Genders[]>(value || []);
-  const [inputValue, setInputValue] = useState("");
+export function FancyMultiSelect({ value = [], onChange }: FancyMultiSelectProps) {
+  const [open, setOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState("");
+  const commandRef = React.useRef<HTMLDivElement>(null);
 
-  // Update parent when selection changes
-  //   useEffect(() => {
-  //     onChange?.(selected);
-  //   }, [selected, onChange]);
+  const handleUnselect = React.useCallback(
+    (gender: Gender) => {
+      onChange?.(value.filter((s) => s !== gender));
+    },
+    [onChange, value]
+  );
 
-  const handleUnselect = useCallback((Genders: Genders) => {
-    setSelected((prev) => prev.filter((s) => s.value !== Genders.value));
-  }, []);
-
-  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
-    const input = inputRef.current;
-    if (input) {
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if (input.value === "") {
-          setSelected((prev) => {
-            const newSelected = [...prev];
-            newSelected.pop();
-            return newSelected;
-          });
-        }
+  const handleSelect = React.useCallback(
+    (selectedValue: string) => {
+      const genderValue = parseInt(selectedValue, 10) as Gender;
+      if (!value.includes(genderValue)) {
+        onChange?.([...value, genderValue]);
+        setInputValue("");
       }
-      // This is not a default behaviour of the <input /> field
-      if (e.key === "Escape") {
-        input.blur();
-      }
+    },
+    [onChange, value]
+  );
+
+  const handleBlur = React.useCallback((event: React.FocusEvent) => {
+    const commandElement = commandRef.current;
+    if (!commandElement?.contains(event.relatedTarget as Node)) {
+      setOpen(false);
     }
   }, []);
 
-  const selectables = GENDERS.filter((g) => !selected.some((s) => s.value === g.value));
+  const selectableGenders = React.useMemo(
+    () => GENDERS.filter((gender) => !value.includes(gender.value)),
+    [value]
+  );
 
-  //console.log(selectables, selected, inputValue);
+  const hasSelectableGenders = selectableGenders.length > 0;
 
   return (
-    <Command onKeyDown={handleKeyDown} className="overflow-visible bg-transparent">
-      <div className="group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-        <div className="flex flex-wrap gap-1">
-          {selected.map((Genders) => {
-            return (
-              <Badge key={Genders.value} variant="secondary">
-                {Genders.label}
+    <Command
+      ref={commandRef}
+      className="overflow-visible bg-transparent space-y-2"
+      onBlur={handleBlur}
+    >
+      <div className="flex flex-col space-y-4">
+        {/* Champ de recherche */}
+        {hasSelectableGenders && (
+          <div className="border rounded-md px-3 py-2 ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+            <CommandInput
+              value={inputValue}
+              onValueChange={setInputValue}
+              placeholder="Rechercher..."
+              className="bg-transparent outline-none placeholder:text-muted-foreground"
+              onFocus={() => setOpen(true)}
+            />
+          </div>
+        )}
+
+        {/* Badges des genres sélectionnés */}
+        {value.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {value.map((gender) => {
+              const genderInfo = GENDERS.find((g) => g.value === gender);
+              return (
                 <button
-                  className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleUnselect(Genders);
-                    }
-                  }}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  onClick={() => handleUnselect(Genders)}
+                  key={gender}
+                  onClick={() => handleUnselect(gender)}
+                  className="focus:outline-none group"
                 >
-                  <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                  <Badge
+                    variant="outline"
+                    className="px-4 py-2 text-base font-medium cursor-pointer hover:bg-violet-200 hover:border-violet-500 transition-colors flex items-center gap-2"
+                  >
+                    {genderInfo?.label}
+                    <X className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </Badge>
                 </button>
-              </Badge>
-            );
-          })}
-          {/* Avoid having the "Search" Icon */}
-          <CommandPrimitive.Input
-            ref={inputRef}
-            value={inputValue}
-            onValueChange={setInputValue}
-            onBlur={() => setOpen(false)}
-            onFocus={() => setOpen(true)}
-            placeholder=""
-            className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
-          />
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-      <div className="relative mt-2">
-        <CommandList>
-          {open && selectables.length > 0 ? (
-            <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
-              <CommandGroup className="h-full overflow-auto">
-                {selectables.map((Genders) => {
-                  return (
-                    <CommandItem
-                      key={Genders.value}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onSelect={(value) => {
-                        setInputValue("");
-                        setSelected((prev) => [
-                          ...prev,
-                          {
-                            value: Genders.value as string,
-                            label: Genders.label,
-                          },
-                        ]);
-                      }}
-                      className={"cursor-pointer"}
-                    >
-                      {Genders.label}
-                    </CommandItem>
-                  );
-                })}
+
+      {/* Liste déroulante des options */}
+      <div className="relative">
+        {open && hasSelectableGenders && (
+          <div className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
+            <CommandList>
+              <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
+              <CommandGroup>
+                {selectableGenders.map((gender) => (
+                  <CommandItem
+                    key={gender.value}
+                    value={gender.value.toString()}
+                    onSelect={handleSelect}
+                    className="cursor-pointer"
+                  >
+                    {gender.label}
+                  </CommandItem>
+                ))}
               </CommandGroup>
-            </div>
-          ) : null}
-        </CommandList>
+            </CommandList>
+          </div>
+        )}
       </div>
     </Command>
   );

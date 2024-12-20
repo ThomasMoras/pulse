@@ -4,11 +4,7 @@ import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useContract } from "@/hooks/useContract";
 
-import {
-  useWriteContract,
-  useWaitForTransactionReceipt,
-  useAccount,
-} from "wagmi";
+import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
 
 export function useContract(successCallback: () => void) {
   const { toast } = useToast();
@@ -28,10 +24,7 @@ export function useContract(successCallback: () => void) {
         title: "Error",
         description: "Transaction failed.",
       });
-    } else if (
-      writeContractStatus === "success" &&
-      transactionStatus === "pending"
-    ) {
+    } else if (writeContractStatus === "success" && transactionStatus === "pending") {
       toast({
         title: "Information",
         description: "Transaction is beeing processed.",
@@ -47,9 +40,7 @@ export function useContract(successCallback: () => void) {
 
   return {
     isConnected: isConnected,
-    isPending:
-      transactionStatus === "pending" &&
-      !["idle", "error"].includes(writeContractStatus),
+    isPending: transactionStatus === "pending" && !["idle", "error"].includes(writeContractStatus),
     writeContract,
   };
 }

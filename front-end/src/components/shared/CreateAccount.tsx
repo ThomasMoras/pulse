@@ -65,14 +65,7 @@ const formSchema = z.object({
       message: "La date de naissance doit être dans le passé.",
     }),
   image: z.instanceof(File).optional(),
-  interestedBy: z
-    .array(
-      z.object({
-        value: z.string(),
-        label: z.string(),
-      })
-    )
-    .default([]),
+  interestedBy: z.array(z.nativeEnum(Gender)).default([]),
 });
 
 // Type pour les données de formulaire
@@ -85,7 +78,7 @@ export function CreateAccount() {
 
   // État pour stocker les métadonnées du compte
   const [sbtMetaData, setSbtMetaData] = useState<SBTMetaData>({
-    id: 0,
+    id: BigInt(0),
     firstName: "",
     email: "",
     age: 0,
@@ -129,15 +122,14 @@ export function CreateAccount() {
 
   // Préparer les données du compte
   const prepareAccountData = (formData: FormData): SBTMetaData => {
+    console.log("prepareAccountData", formData);
     return {
-      id: 0,
+      id: BigInt(0),
       firstName: formData.firstName,
       email: formData.email,
       age: calculateSafeAge(formData.birthday),
       gender: formData.gender,
-      interestedBy: formData.interestedBy.map(
-        (interest) => Gender[interest.value as keyof typeof Gender]
-      ),
+      interestedBy: formData.interestedBy,
       localisation: "",
       hobbies: [],
       note: 0,
@@ -171,6 +163,7 @@ export function CreateAccount() {
         issuer: sbtData.issuer as `0x${string}`,
       };
 
+      console.log(sbtData);
       // Écrire dans le contrat
       writeContract({
         ...pulseContract,
@@ -202,6 +195,7 @@ export function CreateAccount() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((data) => {
+            //console.log(data);
             const completeData = prepareAccountData(data);
             createAccount(completeData);
           })}
@@ -290,15 +284,20 @@ export function CreateAccount() {
           <FormField
             control={form.control}
             name="interestedBy"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Intéressé(e) par</FormLabel>
-                <FormControl>
-                  <FancyMultiSelect value={field.value} onChange={field.onChange} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              // Ajouter un console.log pour afficher les valeurs de field
+              console.log(field); // Affiche toutes les propriétés de field (par exemple, value, onChange, etc.)
+
+              return (
+                <FormItem>
+                  <FormLabel>Intéressé(e) par</FormLabel>
+                  <FormControl>
+                    <FancyMultiSelect value={field.value} onChange={field.onChange} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
 
           {/* Champ Image de profil */}

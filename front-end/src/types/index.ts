@@ -1,3 +1,5 @@
+import profilSchema from "@/lib/schemas/profil";
+
 export enum Gender {
   Male = 1,
   Female = 2,
@@ -7,7 +9,7 @@ export enum Gender {
 }
 
 export interface SBTMetaData {
-  id: number;
+  id: bigint;
   firstName: string;
   email: string;
   age: number;
@@ -20,3 +22,5 @@ export interface SBTMetaData {
   issuedAt: number;
   issuer: string;
 }
+
+export type ProfilData = z.infer<typeof profilSchema>;

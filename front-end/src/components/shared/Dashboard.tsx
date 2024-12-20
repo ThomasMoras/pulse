@@ -5,8 +5,6 @@ import { useUser } from "@/contexts/user-context";
 
 const Dashboard = () => {
   const { isAccountCreated } = useUser();
-  console.log("Dans home ", isAccountCreated);
-
   return (
     <div className="flex justify-center items-center">
       {!isAccountCreated ? (
