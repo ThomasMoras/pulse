@@ -3,17 +3,16 @@ pragma solidity 0.8.28;
 
 import "./enum/GenderType.sol";
 
-// Struct to store additional token metadata
+// Struct SBT token metadata
 struct SBTMetaData {
-    uint256 id;
     string firstName;
     string email;
-    uint8 age;
+    uint256 birthday;
     Gender gender;
     Gender[] interestedBy;
     string localisation;
     string[] hobbies;
-    uint note;
+    uint8 note;
     string[] ipfsHashs;
     uint256 issuedAt;
     address issuer;

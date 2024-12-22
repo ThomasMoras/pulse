@@ -3,16 +3,17 @@ import {
     loadFixture,
 } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 import { expect } from "chai";
-import hre, { ethers } from "hardhat";
+import hre, { ethers, network } from "hardhat";
 import { getAddress, parseGwei } from "viem";
 import { Pulse, PulseSBT } from "../../typechain-types";
 import { beforeEach } from "mocha";
 import { assert } from "console";
 import { user1Data, user2Data, user3Data } from "./CommonData";
+import { SBTMetaData } from "./Type";
 
 describe("Pulse", function () {
     let pulseContract: Pulse;
-    let sbtContract: PulseSBT;
+    let pulseAddress: any;
     let pulseSignerImpersonated: any;
     let owner: any;
     let user1: any;
@@ -22,58 +23,63 @@ describe("Pulse", function () {
     async function fixture() {
         const [owner, user1, user2, user3] = await ethers.getSigners();
 
-        // Deploy SBT contract
-        const SBTFactory = await ethers.getContractFactory("PulseSBT");
-        const sbt = await SBTFactory.deploy();
-        await sbt.waitForDeployment();
+        // Deploiement du contrat SBT
+        const sbtContract = await ethers.deployContract("PulseSBT", [], {});
+        await sbtContract.waitForDeployment();
+        const pulseSBTAddress = await sbtContract.getAddress();
+        console.log("SBT Contract deployed at:", pulseSBTAddress);
 
-        const sbtAddress = await sbt.getAddress();
-        const sbtContract = SBTFactory.attach(sbtAddress) as PulseSBT;
-
-        // Deploy Pulse contract
+        // Déploiement du contrat Pulse
         const pulseContract = await ethers.deployContract(
             "Pulse",
-            [sbtAddress],
+            [pulseSBTAddress],
             {
                 value: ethers.parseEther("10"),
             },
         );
         await pulseContract.waitForDeployment();
+        const pulseContractAddress = await pulseContract.getAddress();
+        await sbtContract.setPulseAddress(pulseContractAddress);
 
-        sbtContract.setPulseAddress(pulseContract.getAddress());
-        return { pulseContract, sbtContract, owner, user1, user2, user3 };
+        const pulseContractAddressInsideSBT =
+            await sbtContract.getPulseContractAddress();
+
+        console.log(
+            "Pulse Contract address inside SBT Contract : ",
+            pulseContractAddressInsideSBT,
+        );
+        await network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [pulseContractAddress],
+        });
+
+        const pulseAddress = await ethers.getSigner(pulseContractAddress);
+
+        return {
+            pulseContract,
+            pulseAddress,
+            owner,
+            user1,
+            user2,
+            user3,
+        };
     }
 
     describe("Deployment", function () {
         it("Should deploy pulse contract and check if owner is correct", async () => {
-            const { pulseContract, sbtContract, owner, user1, user2, user3 } =
+            const { pulseContract, owner, user1, user2, user3 } =
                 await loadFixture(fixture);
             const contractOwner = await pulseContract.owner(); // Supposant que vous avez une fonction owner() dans votre contrat
             expect(contractOwner).to.equal(owner.address);
         });
-    });
 
-    describe("Verify that PulseSBT is correctly define and set to Pulse Contract", function () {
-        beforeEach(async () => {
-            ({ pulseContract, owner, user1, user2, user3 } =
-                await loadFixture(fixture));
-        });
+        it("Verify that PulseSBT is correctly define and set to Pulse Contract", async () => {});
     });
 
     describe("Consumption of PulseSBT functions", function () {
         beforeEach(async () => {
-            ({ pulseContract, sbtContract, owner, user1, user2, user3 } =
+            ({ pulseContract, pulseAddress, owner, user1, user2, user3 } =
                 await loadFixture(fixture));
-            await pulseContract.mintSoulBoundToken(
-                user1.address,
-                user1Data.firstName,
-                user1Data.lastName,
-                user1Data.age,
-                user1Data.gender,
-                user1Data.localisation,
-                user1Data.hobbies,
-                "",
-            );
         });
 
         it("Should verify that users doest have sbt", async () => {
@@ -82,66 +88,70 @@ describe("Pulse", function () {
             assert((await pulseContract.hasSoulBoundToken(user3)) === false);
         });
         it("Should mint for three users and check data", async () => {
-            assert(
-                (await pulseContract.hasSoulBoundToken(user1.address)) === true,
+            let metadata: SBTMetaData = {
+                ...user1Data,
+                issuer: pulseAddress,
+            };
+            await pulseContract.createAccount(user1.address, metadata);
+            console.log(
+                "hasSBTToken :",
+                await pulseContract.hasSoulBoundToken(user1),
             );
+            assert((await pulseContract.hasSoulBoundToken(user1)) === true);
 
-            await pulseContract.mintSoulBoundToken(
-                user2.address,
-                user2Data.firstName,
-                user2Data.lastName,
-                user2Data.age,
-                user2Data.gender,
-                user2Data.localisation,
-                user2Data.hobbies,
-                "",
-            );
-            assert(
-                (await pulseContract.hasSoulBoundToken(user2.address)) === true,
-            );
+            metadata = {
+                ...user2Data,
+                issuer: pulseAddress,
+            };
+            await pulseContract.createAccount(user2.address, metadata);
+            assert((await pulseContract.hasSoulBoundToken(user2)) === true);
 
-            await pulseContract.mintSoulBoundToken(
-                user3.address,
-                user3Data.firstName,
-                user3Data.lastName,
-                user3Data.age,
-                user3Data.gender,
-                user3Data.localisation,
-                user3Data.hobbies,
-                "",
-            );
-            assert(
-                (await pulseContract.hasSoulBoundToken(user3.address)) === true,
-            );
+            metadata = {
+                ...user3Data,
+                issuer: pulseAddress,
+            };
+            await pulseContract.createAccount(user3.address, metadata);
+            assert((await pulseContract.hasSoulBoundToken(user3)) === true);
         });
 
         it("Should revert, only one sbt by user", async () => {
+            const metadata: SBTMetaData = {
+                ...user1Data,
+                issuer: pulseAddress,
+            };
+            await pulseContract.createAccount(user1, metadata);
             await expect(
-                pulseContract.mintSoulBoundToken(
-                    user1.address,
-                    user1Data.firstName,
-                    user1Data.lastName,
-                    user1Data.age,
-                    user1Data.gender,
-                    user1Data.localisation,
-                    user1Data.hobbies,
-                    "",
-                ),
+                pulseContract.createAccount(user1, metadata),
             ).to.be.revertedWith(
                 "Address has already received a SoulBound Token",
             );
         });
 
         it("Should retrieve token metadata for user1", async () => {
-            let metadata = await pulseContract.getTokenMetadataByUser(
+            const metadataToCreateProfil: SBTMetaData = {
+                ...user1Data,
+                issuer: pulseAddress,
+            };
+            await pulseContract.createAccount(user1, metadataToCreateProfil);
+
+            const metadataGetByAccount = await pulseContract.getAccount(
                 user1.address,
             );
-            expect(metadata.firstName).to.equal(user1Data.firstName);
-            expect(metadata.lastName).to.equal(user1Data.lastName);
-            expect(metadata.age).to.equal(user1Data.age);
-            expect(metadata.gender).to.equal(user1Data.gender);
-            expect(metadata.localisation).to.equal(user1Data.localisation);
-            expect(metadata.hobbies).to.equal(user1Data.hobbies);
+            expect(metadataGetByAccount.firstName).to.equal(
+                user1Data.firstName,
+            );
+            expect(metadataGetByAccount.birthday).to.equal(user1Data.birthday);
+            expect(metadataGetByAccount.gender).to.equal(user1Data.gender);
+            expect(metadataGetByAccount.localisation).to.equal(
+                user1Data.localisation,
+            );
+            expect(metadataGetByAccount.hobbies).to.deep.equal(
+                user1Data.hobbies,
+            );
+            expect(metadataGetByAccount.interestedBy).to.deep.equal(
+                user1Data.interestedBy,
+            );
+            expect(metadataGetByAccount.ipfsHashs).to.deep.equal([]);
         });
     });
 

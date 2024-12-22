@@ -12,13 +12,13 @@ import "./SBTMetaData.sol";
  * @notice This contract allows users to mint their unique SBT corresponding to their profile.
  */
 contract PulseSBT is ERC721, Ownable {
-    uint256 private _tokenIds;
+    uint256 private _nextTokenId;
     address public pulseContractAddress;
 
-    // Mapping to store token metadata by user address
-    mapping(address => SBTMetaData) private _tokenMetadataByUser;
 
-    // Mapping to track which addresses have received a token
+    mapping(uint256 => SBTMetaData) private _tokenMetadata;
+    mapping(address => SBTMetaData) private _tokenMetadataByUser;
+    mapping(address => uint256) private _tokenIdByUser;
     mapping(address => bool) private _hasSoulBoundToken;
 
     // Events
@@ -37,7 +37,7 @@ contract PulseSBT is ERC721, Ownable {
     }
 
     // Method to set the address of the Pulse contract
-    function setPulseAddress(address _pulseContractAddress) external {
+    function setPulseAddress(address _pulseContractAddress) external onlyOwner {
         require(_pulseContractAddress != address(0), "Invalid address");
         pulseContractAddress = _pulseContractAddress;
     }
@@ -55,21 +55,22 @@ contract PulseSBT is ERC721, Ownable {
         address _recipient,
         SBTMetaData memory _data
     ) external onlyPulseContract returns (uint256) {
-        // Ensure an address can only receive one SBT
         require(
             !_hasSoulBoundToken[_recipient],
             "Address has already received a SoulBound Token"
         );
-        _safeMint(_recipient, ++_tokenIds);
-        _data.id = _tokenIds;
-        _tokenMetadataByUser[_recipient] = _data;
 
-        // Mark address as having received a token
+        uint256 tokenId = ++_nextTokenId;
+        
+        _tokenMetadata[tokenId] = _data;
+        _tokenIdByUser[_recipient] = tokenId;
+        _tokenMetadataByUser[_recipient] = _data;
         _hasSoulBoundToken[_recipient] = true;
 
-        emit TokenMinted(_recipient, _tokenIds);
+        _safeMint(_recipient, tokenId);
 
-        return _tokenIds;
+        emit TokenMinted(_recipient, tokenId);
+        return tokenId;
     }
 
     function hasSoulBoundToken(
@@ -102,9 +103,9 @@ contract PulseSBT is ERC721, Ownable {
         // Update token metadata
         _tokenMetadataByUser[_recipient] = _data;
 
-        emit SBTMetaDataUpdated(_data.id);
+        emit SBTMetaDataUpdated(_tokenIdByUser[_recipient]);
 
-        return _data.id;
+        return _tokenIdByUser[_recipient];
     }
 
     // Method to reconstruct the image URL
@@ -114,6 +115,12 @@ contract PulseSBT is ERC721, Ownable {
         return string(abi.encodePacked("ipfs://", hash));
         // Or alternative
         // return string(abi.encodePacked("https://ipfs.io/ipfs/", hash));
+    }
+
+    function getTokenIdByUser(address user) public view returns (uint256) {
+        uint256 tokenId = _tokenIdByUser[user];
+        require(tokenId != 0, "No token found for this user");
+        return tokenId;
     }
 
     // ::::::::::::: ERC721 OVERRIDE ::::::::::::: //
