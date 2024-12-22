@@ -1,18 +1,18 @@
 import profilSchema from "@/lib/schemas/profil";
+import { z } from "zod";
 
 export enum Gender {
-  Male = 1,
-  Female = 2,
-  NonBinary = 3,
-  Other = 4,
-  Undisclosed = 5,
+  Male,
+  Female,
+  NonBinary,
+  Other,
+  Undisclosed,
 }
 
 export interface SBTMetaData {
-  id: bigint;
   firstName: string;
   email: string;
-  age: number;
+  birthday: number;
   gender: Gender;
   interestedBy: Gender[];
   localisation: string;

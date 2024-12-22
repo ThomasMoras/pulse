@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAccount } from "wagmi";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,7 +14,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { FancyMultiSelect } from "../utils/FancySelect";
 import { DatePicker } from "../utils/DatePicker";
 import ImageCropUploader from "../utils/ImageCropUploaderProps";
@@ -26,6 +24,7 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { useProfileUpdate } from "@/hooks/useProfileUpdate";
 import { useRouter } from "next/navigation";
 import { EnumSelect } from "../ui/custom/enum-select";
+import { formatBirthDate } from "@/lib/date/date-operations";
 
 export function EditProfile() {
   const router = useRouter();
@@ -41,8 +40,6 @@ export function EditProfile() {
   useEffect(() => {
     if (!profile) return;
 
-    console.log("Raw profile:", profile);
-
     const genderValue = profile.gender as Gender;
     console.log("Gender value from profile:", {
       genderValue,
@@ -54,10 +51,13 @@ export function EditProfile() {
       return;
     }
 
+    console.log(profile);
+    console.log(formatBirthDate(Number(profile.birthday)));
+
     const resetData = {
       firstName: profile.firstName,
       email: profile.email,
-      birthday: new Date(Date.now() - profile.age * 365 * 24 * 60 * 60 * 1000),
+      birthday: formatBirthDate(Number(profile.birthday)),
       gender: genderValue,
       interestedBy: profile.interestedBy,
     };
@@ -139,11 +139,11 @@ export function EditProfile() {
             control={form.control}
             name="gender"
             render={({ field }) => {
-              console.log("FormField gender rendering:", {
-                fieldValue: field.value,
-                fieldValueType: typeof field.value,
-                formValues: form.getValues(),
-              });
+              // console.log("FormField gender rendering:", {
+              //   fieldValue: field.value,
+              //   fieldValueType: typeof field.value,
+              //   formValues: form.getValues(),
+              // });
               return (
                 <FormItem>
                   <FormLabel>Genre</FormLabel>

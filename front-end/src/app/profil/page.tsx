@@ -1,4 +1,4 @@
-import { EditProfile } from "@/components/shared/EditProfil";
+import { EditProfile } from "@/components/shared/EditProfile";
 import React from "react";
 
 const page = () => {

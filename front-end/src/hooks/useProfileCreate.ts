@@ -4,16 +4,20 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useContract } from "./useContract";
 import { dateToTimestamp } from "@/lib/date/date-operations";
+import { useUser } from "@/contexts/user-context";
 
-export function useProfileUpdate() {
+export function useProfileCreate() {
+  const { setIsAccountCreated } = useUser();
+
   const router = useRouter();
 
   const { writeContract } = useContract(() => {
     // Callback exécuté après la signature et la confirmation de la transaction
+    setIsAccountCreated(true);
     router.push("/");
   });
 
-  const updateProfile = useCallback(
+  const createProfile = useCallback(
     async (address: string, formData: ProfilData, currentProfile: SBTMetaData) => {
       try {
         const updatedData = {
@@ -43,7 +47,7 @@ export function useProfileUpdate() {
 
         await writeContract({
           ...pulseContract,
-          functionName: "updateAccount",
+          functionName: "createAccount",
           args: [address, contractData],
         });
 
@@ -56,5 +60,5 @@ export function useProfileUpdate() {
     [writeContract]
   );
 
-  return { updateProfile };
+  return { createProfile };
 }

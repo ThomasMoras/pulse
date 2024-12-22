@@ -250,11 +250,6 @@ export const pulseContract = {
         {
           "components": [
             {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256",
-            },
-            {
               "internalType": "string",
               "name": "firstName",
               "type": "string",
@@ -265,9 +260,9 @@ export const pulseContract = {
               "type": "string",
             },
             {
-              "internalType": "uint8",
-              "name": "age",
-              "type": "uint8",
+              "internalType": "uint256",
+              "name": "birthday",
+              "type": "uint256",
             },
             {
               "internalType": "enum Gender",
@@ -290,9 +285,9 @@ export const pulseContract = {
               "type": "string[]",
             },
             {
-              "internalType": "uint256",
+              "internalType": "uint8",
               "name": "note",
-              "type": "uint256",
+              "type": "uint8",
             },
             {
               "internalType": "string[]",
@@ -385,11 +380,6 @@ export const pulseContract = {
         {
           "components": [
             {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256",
-            },
-            {
               "internalType": "string",
               "name": "firstName",
               "type": "string",
@@ -400,9 +390,9 @@ export const pulseContract = {
               "type": "string",
             },
             {
-              "internalType": "uint8",
-              "name": "age",
-              "type": "uint8",
+              "internalType": "uint256",
+              "name": "birthday",
+              "type": "uint256",
             },
             {
               "internalType": "enum Gender",
@@ -425,9 +415,9 @@ export const pulseContract = {
               "type": "string[]",
             },
             {
-              "internalType": "uint256",
+              "internalType": "uint8",
               "name": "note",
-              "type": "uint256",
+              "type": "uint8",
             },
             {
               "internalType": "string[]",
@@ -567,11 +557,6 @@ export const pulseContract = {
         {
           "components": [
             {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256",
-            },
-            {
               "internalType": "string",
               "name": "firstName",
               "type": "string",
@@ -582,9 +567,9 @@ export const pulseContract = {
               "type": "string",
             },
             {
-              "internalType": "uint8",
-              "name": "age",
-              "type": "uint8",
+              "internalType": "uint256",
+              "name": "birthday",
+              "type": "uint256",
             },
             {
               "internalType": "enum Gender",
@@ -607,9 +592,9 @@ export const pulseContract = {
               "type": "string[]",
             },
             {
-              "internalType": "uint256",
+              "internalType": "uint8",
               "name": "note",
-              "type": "uint256",
+              "type": "uint8",
             },
             {
               "internalType": "string[]",
