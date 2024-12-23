@@ -5,6 +5,7 @@ export const DEFAULT_FORM_VALUES: ProfilData = {
   email: "",
   birthday: new Date(),
   gender: Gender.Undisclosed,
+  images: [],
   interestedBy: [],
 };
 

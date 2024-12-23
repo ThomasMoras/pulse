@@ -20,7 +20,7 @@ import { Gender, ProfilData } from "@/types";
 import { useRouter } from "next/navigation";
 import { DEFAULT_FORM_VALUES, GENDER_OPTIONS } from "@/constants/constants";
 import { useProfileData } from "@/hooks/useProfileData";
-import profilSchema from "@/lib/schemas/profil";
+import profilSchema from "@/utils/schemas/profil";
 import { useProfileCreate } from "@/hooks/useProfileCreate";
 import { EnumSelect } from "../ui/custom/enum-select";
 
@@ -34,16 +34,6 @@ export function CreateAccount() {
     resolver: zodResolver(profilSchema),
     defaultValues: DEFAULT_FORM_VALUES,
   });
-
-  // // Hook de contrat personnalisé
-  // const { writeContract } = useContract(() => {
-  //   setIsAccountCreated(true);
-  // });
-
-  // Gestion du téléchargement d'image
-  // const handleImageCropped = (croppedFile: File) => {
-  //   form.setValue("image", croppedFile);
-  // };
 
   if (error) {
     return <div className="text-center p-4 text-red-500">Erreur...</div>;
@@ -127,7 +117,6 @@ export function CreateAccount() {
                     <EnumSelect<Gender>
                       value={field.value}
                       onChange={(newValue) => {
-                        console.log("Gender changing to:", newValue);
                         field.onChange(newValue);
                       }}
                       options={GENDER_OPTIONS}

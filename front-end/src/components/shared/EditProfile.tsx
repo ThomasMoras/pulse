@@ -18,19 +18,22 @@ import { FancyMultiSelect } from "../utils/FancySelect";
 import { DatePicker } from "../utils/DatePicker";
 import ImageCropUploader from "../utils/ImageCropUploaderProps";
 import { Gender, ProfilData } from "@/types";
-import profilSchema from "@/lib/schemas/profil";
+import profilSchema from "@/utils/schemas/profil";
 import { DEFAULT_FORM_VALUES, GENDER_OPTIONS } from "@/constants/constants";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useProfileUpdate } from "@/hooks/useProfileUpdate";
 import { useRouter } from "next/navigation";
 import { EnumSelect } from "../ui/custom/enum-select";
-import { formatBirthDate } from "@/lib/date/date-operations";
+import { formatBirthDate } from "@/utils/date.utils";
+import { usePinata } from "@/hooks/usePinata";
 
 export function EditProfile() {
   const router = useRouter();
   const { address } = useAccount();
   const { isLoading, data: profile, error } = useProfileData(address);
   const { updateProfile } = useProfileUpdate();
+  const { uploadFiles } = usePinata();
+  const ipfsToHttps = (hash: string) => `https://gateway.pinata.cloud/ipfs/${hash}`;
 
   const form = useForm<ProfilData>({
     resolver: zodResolver(profilSchema),
@@ -39,36 +42,23 @@ export function EditProfile() {
 
   useEffect(() => {
     if (!profile) return;
-
     const genderValue = profile.gender as Gender;
-    console.log("Gender value from profile:", {
-      genderValue,
-      isValidGender: Object.values(Gender).includes(genderValue),
-    });
-
     if (!Object.values(Gender).includes(genderValue)) {
       console.error("Invalid gender value:", genderValue);
       return;
     }
-
     console.log(profile);
-    console.log(formatBirthDate(Number(profile.birthday)));
-
     const resetData = {
       firstName: profile.firstName,
       email: profile.email,
       birthday: formatBirthDate(Number(profile.birthday)),
       gender: genderValue,
+      images: profile.ipfsHashs.map((hash) => ipfsToHttps(hash)),
       interestedBy: profile.interestedBy,
     };
-
-    console.log("Form reset data:", resetData);
     form.reset(resetData);
-
-    // Vérification après reset
-    console.log("Form values after reset:", form.getValues());
+    console.log(form.getValues());
   }, [profile, form]);
-
   if (error) {
     return <div className="text-center p-4 text-red-500">Erreur lors du chargement du profil</div>;
   }
@@ -89,7 +79,34 @@ export function EditProfile() {
         <form
           onSubmit={form.handleSubmit(async (formData) => {
             if (!address || !profile) return;
-            await updateProfile(address, formData, profile);
+
+            const updatedFormData = { ...formData };
+            if (formData.images?.length) {
+              try {
+                const results = await uploadFiles(formData.images as File[], {
+                  address: address,
+                  type: "profile_images",
+                });
+                console.log(results);
+                // Mettre à jour le formulaire avec les URLs des images
+                const uploadedUrls = results.map((result) => result.ipfsHash);
+                updatedFormData.images = uploadedUrls;
+              } catch (error) {
+                console.error("Upload failed:", error);
+                // Gérer l'erreur
+              }
+            }
+            // if (formData.images?.length) {
+            //   const uploadedUrls = await uploadFiles(
+            //     formData.images as File[],
+            //     address,
+            //     "profile_images"
+            //   );
+            //   updatedFormData.images = uploadedUrls;
+            // }
+            console.log(updatedFormData);
+            await updateProfile(address, updatedFormData, profile);
+            console.log("Profile updated successfully");
           })}
           className="space-y-6"
         >
@@ -180,17 +197,23 @@ export function EditProfile() {
 
           <FormField
             control={form.control}
-            name="image"
+            name="images"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Photo de profil</FormLabel>
+                <FormLabel>Photos</FormLabel>
                 <FormControl>
                   <ImageCropUploader
                     aspectRatio={1}
                     minWidth={100}
                     minHeight={100}
+                    existingImages={profile?.ipfsHashs?.map((hash) => ipfsToHttps(hash)) || []}
                     maxSize={5}
-                    onImageCropped={(file) => field.onChange(file)}
+                    onImageCropped={(files) => {
+                      //console.log("Files received from ImageCropUploader:", files);
+                      field.onChange(files);
+                      // Pour debugger
+                      console.log("Form values after onChange:", form.getValues());
+                    }}
                   />
                 </FormControl>
                 <FormMessage />

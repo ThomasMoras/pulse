@@ -3,7 +3,7 @@ import { ProfilData, SBTMetaData } from "@/types";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useContract } from "./useContract";
-import { dateToTimestamp } from "@/lib/date/date-operations";
+import { dateToTimestamp } from "@/utils/date.utils";
 
 export function useProfileUpdate() {
   const router = useRouter();
@@ -22,7 +22,9 @@ export function useProfileUpdate() {
           email: formData.email,
           birthday: formData.birthday,
           gender: formData.gender,
+          ipfsHashs: formData.images,
           interestedBy: formData.interestedBy,
+
           issuedAt: Date.now(),
         };
         console.log(updatedData);

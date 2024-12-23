@@ -16,7 +16,14 @@ const profilSchema = z.object({
     .refine((date) => date <= new Date(), {
       message: "La date de naissance doit être dans le passé.",
     }),
-  image: z.instanceof(File).optional(),
+  images: z
+    .array(
+      z.union([
+        z.instanceof(File),
+        z.string(), // Pour gérer les URLs des images existantes
+      ])
+    )
+    .default([]), // Tableau vide par défaut
   interestedBy: z.array(z.nativeEnum(Gender)).default([]),
 });
 

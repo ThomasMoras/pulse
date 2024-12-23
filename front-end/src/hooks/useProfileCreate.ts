@@ -3,7 +3,7 @@ import { ProfilData, SBTMetaData } from "@/types";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useContract } from "./useContract";
-import { dateToTimestamp } from "@/lib/date/date-operations";
+import { dateToTimestamp } from "@/utils/date.utils";
 import { useUser } from "@/contexts/user-context";
 
 export function useProfileCreate() {

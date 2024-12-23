@@ -10,6 +10,9 @@ const nextConfig = {
     config.externals.push("pino-pretty", "encoding");
     return config;
   },
+  images: {
+    domains: ["gateway.pinata.cloud"], // Permet l'utilisation des images depuis Pinata
+  },
 };
 
 export default nextConfig;

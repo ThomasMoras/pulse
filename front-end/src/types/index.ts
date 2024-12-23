@@ -1,4 +1,4 @@
-import profilSchema from "@/lib/schemas/profil";
+import profilSchema from "@/utils/schemas/profil";
 import { z } from "zod";
 
 export enum Gender {
