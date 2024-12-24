@@ -30,9 +30,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   useEffect(() => {
-    // console.log("hasSBT :", hasSBT);
     if (hasSBT === true) {
-      console.log("Mise à jour de isAccountCreated à true");
       setIsAccountCreated(true);
     }
   }, [hasSBT]);

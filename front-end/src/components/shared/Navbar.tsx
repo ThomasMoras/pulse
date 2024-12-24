@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import Link from "next/link";
 import { useUser } from "@/contexts/user-context";
+import { ModeToggle } from "./ToogleTheme";
 
 const Navbar = () => {
   const { isAccountCreated } = useUser();
@@ -30,6 +31,10 @@ const Navbar = () => {
       <h1 className="text-2xl font-bold text-gray-800">Lovenect</h1>
 
       <div className="flex ml-auto">
+        <div className="mr-4">
+          <ModeToggle />
+        </div>
+
         {isConnected && isAccountCreated && (
           <div>
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>

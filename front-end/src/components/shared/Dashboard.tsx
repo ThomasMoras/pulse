@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { CreateAccount } from "./CreateAccount";
 import { useUser } from "@/contexts/user-context";
 
 const Dashboard = () => {
   const { isAccountCreated } = useUser();
+
+  useEffect(() => {
+    console.log("isAccountCreated :", isAccountCreated);
+  }, [isAccountCreated]);
+
   return (
     <div className="flex justify-center items-center">
       {!isAccountCreated ? (

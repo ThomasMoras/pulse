@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-// import { Web3Provider } from "@/contexts/web3-provider";
 import Layout from "@/components/shared/Layout";
 import { Web3Provider } from "@/contexts/web3-provider";
 import { Toaster } from "@/components/ui/toaster";
-// import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/utils/theme-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,12 +28,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Web3Provider>
-          <Layout>{children}</Layout>
-        </Web3Provider>
-        <Toaster />
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Web3Provider>
+            <Layout>{children}</Layout>
+          </Web3Provider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
