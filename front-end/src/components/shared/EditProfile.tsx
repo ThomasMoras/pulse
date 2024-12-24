@@ -83,28 +83,34 @@ export function EditProfile() {
             const updatedFormData = { ...formData };
             if (formData.images?.length) {
               try {
-                const results = await uploadFiles(formData.images as File[], {
-                  address: address,
-                  type: "profile_images",
-                });
+                console.log(formData.images);
+                const ipfsHashes = formData.images
+                  .filter((file) => typeof file === "string")
+                  .map((url) => {
+                    const hashMatch = url.match(/ipfs\/(.+)$/);
+                    return hashMatch ? hashMatch[1] : "";
+                  })
+                  .filter((hash) => hash !== "");
+
+                const newFiles = formData.images.filter((file) => file instanceof File);
+                console.log(ipfsHashes);
+                console.log(newFiles);
+
+                const obj = { address: `0x${address}`, type: "profile_images" };
+                const stringValue = JSON.stringify(obj);
+                const results = await uploadFiles(newFiles as File[], stringValue);
                 console.log(results);
+                updatedFormData.images = [
+                  ...ipfsHashes,
+                  ...results.map((result) => result.ipfsHash),
+                ];
+                console.log(updatedFormData);
                 // Mettre à jour le formulaire avec les URLs des images
-                const uploadedUrls = results.map((result) => result.ipfsHash);
-                updatedFormData.images = uploadedUrls;
               } catch (error) {
                 console.error("Upload failed:", error);
                 // Gérer l'erreur
               }
             }
-            // if (formData.images?.length) {
-            //   const uploadedUrls = await uploadFiles(
-            //     formData.images as File[],
-            //     address,
-            //     "profile_images"
-            //   );
-            //   updatedFormData.images = uploadedUrls;
-            // }
-            console.log(updatedFormData);
             await updateProfile(address, updatedFormData, profile);
             console.log("Profile updated successfully");
           })}
@@ -209,10 +215,13 @@ export function EditProfile() {
                     existingImages={profile?.ipfsHashs?.map((hash) => ipfsToHttps(hash)) || []}
                     maxSize={5}
                     onImageCropped={(files) => {
-                      //console.log("Files received from ImageCropUploader:", files);
-                      field.onChange(files);
-                      // Pour debugger
-                      console.log("Form values after onChange:", form.getValues());
+                      // Met à jour le champ sans déclencher de soumission
+                      field.onChange({
+                        target: {
+                          value: files,
+                        },
+                        type: "change",
+                      });
                     }}
                   />
                 </FormControl>

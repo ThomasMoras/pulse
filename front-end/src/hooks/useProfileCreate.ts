@@ -26,6 +26,7 @@ export function useProfileCreate() {
           email: formData.email,
           birthday: formData.birthday,
           gender: formData.gender,
+          ipfsHashs: formData.images,
           interestedBy: formData.interestedBy,
           issuedAt: Date.now(),
         };

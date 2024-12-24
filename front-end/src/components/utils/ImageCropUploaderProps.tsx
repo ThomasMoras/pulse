@@ -10,8 +10,8 @@ interface ImageCropUploaderProps {
   maxSize?: number;
   minWidth?: number;
   minHeight?: number;
-  existingImages?: string[]; // URLs des images IPFS existantes
-  onImageCropped?: (files: File[]) => void;
+  existingImages?: string[];
+  onImageCropped?: (files: (File | string)[]) => void;
 }
 
 const ImageCropUploader: React.FC<ImageCropUploaderProps> = ({
@@ -20,12 +20,10 @@ const ImageCropUploader: React.FC<ImageCropUploaderProps> = ({
   onImageCropped,
 }) => {
   const [images, setImages] = useState<string[]>(existingImages);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<(File | string)[]>(existingImages);
 
-  // Créer une fonction mémorisée pour notifier les changements
   const notifyChanges = useCallback(
-    (newFiles: File[]) => {
-      // Utiliser setTimeout pour éviter la mise à jour pendant le rendu
+    (newFiles: (File | string)[]) => {
       setTimeout(() => {
         onImageCropped?.(newFiles);
       }, 0);
@@ -92,40 +90,23 @@ const ImageCropUploader: React.FC<ImageCropUploaderProps> = ({
     [images.length, processFile]
   );
 
-  // const handleDeleteImage = useCallback(
-  //   (index: number) => {
-  //     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-  //     setFiles((prevFiles) => {
-  //       const newFiles = prevFiles.filter((_, i) => i !== index);
-  //       notifyChanges(newFiles);
-  //       return newFiles;
-  //     });
-  //   },
-  //   [notifyChanges]
-  // );
-  const handleDeleteImage = (index: number) => {
-    const isExistingImage = index < existingImages.length;
-
-    setImages((prevImages) => {
-      const newImages = prevImages.filter((_, i) => i !== index);
-      return newImages;
-    });
-
-    if (!isExistingImage) {
+  const handleDeleteImage = useCallback(
+    (index: number) => {
+      setImages((prevImages) => prevImages.filter((_, i) => i !== index));
       setFiles((prevFiles) => {
-        const newFiles = prevFiles.filter((_, i) => i !== index - existingImages.length);
-        onImageCropped?.(newFiles);
+        const newFiles = prevFiles.filter((_, i) => i !== index);
+        notifyChanges(newFiles); // On passe true pour indiquer que c'est une suppression
         return newFiles;
       });
-    }
-  };
+    },
+    [notifyChanges]
+  );
 
   return (
     <Card className="w-full max-w-xl">
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {images.length < 5 && <DropZone onDrop={handleDrop} onChange={handleFileChange} />}
-
           {images.map((image, index) => (
             <ImagePreview key={index} image={image} index={index} onDelete={handleDeleteImage} />
           ))}

@@ -20,19 +20,12 @@ export const usePinata = () => {
         formData.append("files", file);
       });
 
-      // const metadata = {
-      //   keyvalues: {
-      //     address,
-      //     type,
-      //   },
-      // };
-      // Correction du format des métadonnées
       const metadata = {
         name: `${type}_${Date.now()}`,
         keyvalues: {
-          address: address.toString(), // Conversion en string
+          address: address.toString(),
           type: type,
-          timestamp: Date.now().toString(), // Conversion en string
+          timestamp: Date.now().toString(),
         },
       };
       formData.append("metadata", JSON.stringify(metadata));

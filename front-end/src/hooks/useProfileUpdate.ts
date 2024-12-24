@@ -22,9 +22,8 @@ export function useProfileUpdate() {
           email: formData.email,
           birthday: formData.birthday,
           gender: formData.gender,
-          ipfsHashs: formData.images,
+          ipfsHashs: [...formData.images],
           interestedBy: formData.interestedBy,
-
           issuedAt: Date.now(),
         };
         console.log(updatedData);

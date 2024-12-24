@@ -23,12 +23,15 @@ import { useProfileData } from "@/hooks/useProfileData";
 import profilSchema from "@/utils/schemas/profil";
 import { useProfileCreate } from "@/hooks/useProfileCreate";
 import { EnumSelect } from "../ui/custom/enum-select";
+import { usePinata } from "@/hooks/usePinata";
 
 export function CreateAccount() {
   const router = useRouter();
   const { address } = useAccount();
+  const { uploadFiles } = usePinata();
   const { isLoading, data: profile, error } = useProfileData(address);
   const { createProfile } = useProfileCreate();
+  const ipfsToHttps = (hash: string) => `https://gateway.pinata.cloud/ipfs/${hash}`;
 
   const form = useForm<ProfilData>({
     resolver: zodResolver(profilSchema),
@@ -55,7 +58,21 @@ export function CreateAccount() {
         <form
           onSubmit={form.handleSubmit(async (formData) => {
             if (!address || !profile) return;
-            await createProfile(address, formData, profile);
+            const updatedFormData = { ...formData };
+            if (formData.images?.length) {
+              try {
+                const obj = { address: `0x${address}`, type: "profile_images" };
+                const stringValue = JSON.stringify(obj);
+                const results = await uploadFiles(formData.images as File[], stringValue);
+                console.log(results);
+                updatedFormData.images = results.map((result) => result.ipfsHash);
+                console.log(updatedFormData);
+              } catch (error) {
+                console.error("Upload failed:", error);
+                // Gérer l'erreur
+              }
+            }
+            await createProfile(address, updatedFormData, profile);
           })}
           className="space-y-6"
         >
@@ -145,17 +162,23 @@ export function CreateAccount() {
 
           <FormField
             control={form.control}
-            name="image"
+            name="images"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Photo de profil</FormLabel>
+                <FormLabel>Photos</FormLabel>
                 <FormControl>
                   <ImageCropUploader
                     aspectRatio={1}
                     minWidth={100}
                     minHeight={100}
+                    existingImages={profile?.ipfsHashs?.map((hash) => ipfsToHttps(hash)) || []}
                     maxSize={5}
-                    onImageCropped={(file) => field.onChange(file)}
+                    onImageCropped={(files) => {
+                      //console.log("Files received from ImageCropUploader:", files);
+                      field.onChange(files);
+                      // Pour debugger
+                      console.log("Form values after onChange:", form.getValues());
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
