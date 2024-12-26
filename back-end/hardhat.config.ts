@@ -1,8 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
-// import "@nomicfoundation/hardhat-toolbox-viem";
-// import "@nomicfoundation/hardhat-viem";
+import "@nomiclabs/hardhat-solhint";
 import "solidity-docgen";
 import "dotenv/config";
 

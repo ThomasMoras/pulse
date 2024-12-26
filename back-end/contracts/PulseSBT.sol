@@ -3,8 +3,7 @@ pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./enum/GenderType.sol";
-import "./SBTMetaData.sol";
+import {SBTMetaData} from "./utils/structs/SBTMetaData.sol";
 
 /**
  * @title Pulse SoulBond Token Contract
@@ -14,7 +13,6 @@ import "./SBTMetaData.sol";
 contract PulseSBT is ERC721, Ownable {
     uint256 private _nextTokenId;
     address public pulseContractAddress;
-
 
     mapping(uint256 => SBTMetaData) private _tokenMetadata;
     mapping(address => SBTMetaData) private _tokenMetadataByUser;
@@ -29,10 +27,7 @@ contract PulseSBT is ERC721, Ownable {
     constructor() ERC721("PulseAccountSBT", "PSBT") Ownable(msg.sender) {}
 
     modifier onlyPulseContract() {
-        require(
-            msg.sender == pulseContractAddress,
-            "Only the Pulse contract can call this function"
-        );
+        require(msg.sender == pulseContractAddress, "Only the Pulse contract can call this function");
         _;
     }
 
@@ -55,13 +50,10 @@ contract PulseSBT is ERC721, Ownable {
         address _recipient,
         SBTMetaData memory _data
     ) external onlyPulseContract returns (uint256) {
-        require(
-            !_hasSoulBoundToken[_recipient],
-            "Address has already received a SoulBound Token"
-        );
+        require(!_hasSoulBoundToken[_recipient], "Address has already received a SoulBound Token");
 
         uint256 tokenId = ++_nextTokenId;
-        
+
         _tokenMetadata[tokenId] = _data;
         _tokenIdByUser[_recipient] = tokenId;
         _tokenMetadataByUser[_recipient] = _data;
@@ -73,15 +65,11 @@ contract PulseSBT is ERC721, Ownable {
         return tokenId;
     }
 
-    function hasSoulBoundToken(
-        address _recipient
-    ) external view returns (bool) {
+    function hasSoulBoundToken(address _recipient) external view returns (bool) {
         return _hasSoulBoundToken[_recipient];
     }
 
-    function getSBTMetaDataByUser(
-        address _recipient
-    ) external view onlyPulseContract returns (SBTMetaData memory) {
+    function getSBTMetaDataByUser(address _recipient) external view onlyPulseContract returns (SBTMetaData memory) {
         return _tokenMetadataByUser[_recipient];
     }
 
@@ -95,10 +83,7 @@ contract PulseSBT is ERC721, Ownable {
         SBTMetaData memory _data
     ) external onlyPulseContract returns (uint256) {
         // Ensure the user has a SoulBound Token
-        require(
-            _hasSoulBoundToken[_recipient],
-            "User does not have a SoulBound Token"
-        );
+        require(_hasSoulBoundToken[_recipient], "User does not have a SoulBound Token");
 
         // Update token metadata
         _tokenMetadataByUser[_recipient] = _data;
@@ -109,9 +94,7 @@ contract PulseSBT is ERC721, Ownable {
     }
 
     // Method to reconstruct the image URL
-    function getImageUrl(
-        string memory hash
-    ) public pure returns (string memory) {
+    function getImageUrl(string memory hash) public pure returns (string memory) {
         return string(abi.encodePacked("ipfs://", hash));
         // Or alternative
         // return string(abi.encodePacked("https://ipfs.io/ipfs/", hash));
@@ -134,20 +117,11 @@ contract PulseSBT is ERC721, Ownable {
         emit TokenBurnt(_tokenId);
     }
 
-    function transferFrom(
-        address,
-        address,
-        uint256
-    ) public virtual override(ERC721) {
+    function transferFrom(address, address, uint256) public virtual override(ERC721) {
         revert("SoulBound Tokens are non-transferable");
     }
 
-    function safeTransferFrom(
-        address,
-        address,
-        uint256,
-        bytes memory
-    ) public virtual override(ERC721) {
+    function safeTransferFrom(address, address, uint256, bytes memory) public virtual override(ERC721) {
         revert("SoulBound Tokens are non-transferable");
     }
 

@@ -1,10 +1,25 @@
 {
-  "extends": ["solhint:recommended"],
+  "extends": "solhint:recommended",
+  "plugins": ["prettier"],
   "rules": {
-    "prettier/prettier": "error",
-    "avoid-throw": false,
-    "avoid-suicide": "error",
-    "avoid-sha3": "warn"
-  },
-  "plugins": ["prettier"]
+    "compiler-version": ["error", "0.8.28"],
+    "func-visibility": ["warn", { "ignoreConstructors": true }],
+    "prettier/prettier": [
+      "error",
+      {
+        "printWidth": 100,
+        "tabWidth": 2,
+        "useTabs": false,
+        "singleQuote": false,
+        "bracketSpacing": true
+      }
+    ],
+    "max-line-length": ["warn", 120],
+    "indent": ["error", 4],
+    "quotes": ["error", "double"],
+    "no-empty-blocks": "warn",
+    "not-rely-on-time": "off",
+    "avoid-low-level-calls": "warn",
+    "no-global-import": "off"
+  }
 }
