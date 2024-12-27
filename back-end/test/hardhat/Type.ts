@@ -6,7 +6,7 @@ export enum Gender {
   Undisclosed,
 }
 
-export enum Interaction {
+export enum InteractionStatus {
   NONE,
   LIKED,
   DISLIKED,

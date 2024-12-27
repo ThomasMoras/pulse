@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IPulseSBT.sol";
 import "./utils/structs/SBTMetaData.sol";
 import "./utils/structs/Message.sol";
+import "./utils/structs/ConversationInfo.sol";
 import "./utils/enum/InteractionStatus.sol";
 
 /**
@@ -27,10 +28,9 @@ contract Pulse is Ownable {
   mapping(address => uint8) userLike;
 
   mapping(bytes32 => Message[]) conversations;
-  // mapping(bytes32 => address[2]) conversationParticipants;
-  // mapping(address => bytes32[]) public userConversations;
-  // mapping(bytes32 => bool) public userConversationsExists;
-  // mapping(address => mapping(address => bytes32)) public conversationBetweenUsers;
+  mapping(address => mapping(uint256 => ConversationInfo[])) private userConversationsByPage;
+  mapping(address => uint256) private userConversationsCount;
+  mapping(address => mapping(address => bytes32)) private conversationBetweenUsers;
 
   error InvalidAddress();
   error AlreadyInteracted(address user, address recipient);
@@ -38,8 +38,9 @@ contract Pulse is Ownable {
   error UserNotActive(address user);
   error SelfInteractionCheck(address user);
   error UnauthorizedAccess(address user);
-  error NoConversationFound();
+  error ConversationNotFound();
   error NotAParticipant();
+  error EmptyMessage();
 
   constructor(address _pulseSBTAddress) payable Ownable(msg.sender) {
     pulseSBTAddress = _pulseSBTAddress;
@@ -65,11 +66,10 @@ contract Pulse is Ownable {
     _;
   }
 
-  // modifier onlyParticipants(bytes32 _conversationId) {
-  //   address[] memory participants = conversationParticipants[_conversationId];
-  //   if (participants[0] != msg.sender && participants[1] != msg.sender) revert NotAParticipant();
-  //   _;
-  // }
+  modifier onlyParticipants(bytes32 _conversationId) {
+    if (!isParticipant(msg.sender, _conversationId)) revert NotAParticipant();
+    _;
+  }
 
   modifier checkInteraction(address _recipient) {
     if (msg.sender == _recipient) revert SelfInteractionCheck(msg.sender);
@@ -84,7 +84,7 @@ contract Pulse is Ownable {
   event AccountUpdated(address sender);
   event Interacted(address sender, address receiver, InteractionStatus interraction);
   event NewMessage(bytes32 indexed conversationId, address indexed sender, uint256 timestamp);
-  event Match(address sender, address receiver);
+  event Match(address sender, address receiver, bytes32 conversationId);
 
   // Not implemented
   mapping(address => bool) isPartner;
@@ -95,17 +95,25 @@ contract Pulse is Ownable {
 
   // ************************ USER PROFILE ACTION *********************//
 
-  function createAccount(address _recipient, SBTMetaData memory _data) external {
+  function createAccount(
+    address _recipient,
+    SBTMetaData memory _data
+  ) external returns (uint256 tokenId) {
     uint256 tokenId = pulseSBT.mintSoulBoundToken(_recipient, _data);
     isRegistred[_recipient] = true;
     userLike[_recipient] = LIKE_PER_DAY;
     userSuperLike[_recipient] = SUPER_LIKE_PER_DAY;
     emit AccountCreate(_recipient);
+    return tokenId;
   }
 
-  function updateAccount(address _recipient, SBTMetaData memory _data) external {
+  function updateAccount(
+    address _recipient,
+    SBTMetaData memory _data
+  ) external returns (uint256 tokenId) {
     uint256 tokenId = pulseSBT.updateTokenMetadata(_recipient, _data);
     emit AccountUpdated(_recipient);
+    return tokenId;
   }
 
   function removeAccount() external onlyRegistredUsers returns (bool) {
@@ -130,8 +138,8 @@ contract Pulse is Ownable {
 
     // Create conversation if user like each others
     if (hasInteracted[_recipient][msg.sender] == InteractionStatus.LIKED) {
-      //_createConversation(msg.sender, _recipient);
-      emit Match(msg.sender, _recipient);
+      bytes32 conversationId = _createConversation(msg.sender, _recipient);
+      emit Match(msg.sender, _recipient, conversationId);
     }
   }
 
@@ -147,21 +155,22 @@ contract Pulse is Ownable {
     --userSuperLike[msg.sender];
   }
 
-  // function sendMessage(
-  //   bytes32 _conversationId,
-  //   string calldata _encryptedContent
-  // ) external onlyParticipants(_conversationId) {
-  //   require(bytes(_encryptedContent).length > 0, "Message cannot be empty");
-  //   conversations[_conversationId].push(
-  //     Message({
-  //       sender: msg.sender,
-  //       encryptedContent: _encryptedContent,
-  //       timestamp: uint32(block.timestamp)
-  //     })
-  //   );
+  function sendMessage(
+    bytes32 _conversationId,
+    string calldata _encryptedContent
+  ) external onlyParticipants(_conversationId) {
+    if (bytes(_encryptedContent).length == 0) revert EmptyMessage();
 
-  //   emit NewMessage(_conversationId, msg.sender, block.timestamp);
-  // }
+    conversations[_conversationId].push(
+      Message({
+        sender: msg.sender,
+        encryptedContent: _encryptedContent,
+        timestamp: uint32(block.timestamp)
+      })
+    );
+
+    emit NewMessage(_conversationId, msg.sender, uint32(block.timestamp));
+  }
 
   // not yet implemented
   function joinEvent(address _sender) external onlyRegistredUsers {}
@@ -199,50 +208,71 @@ contract Pulse is Ownable {
     if (!isActive(_recipient)) revert UserNotActive(_recipient);
     return hasInteracted[_user][_recipient];
   }
+  function getUserConversationsPage(
+    address _user,
+    uint256 _page
+  ) external view returns (ConversationInfo[] memory conversations, uint256 totalPages) {
+    conversations = userConversationsByPage[_user][_page];
+    totalPages =
+      (userConversationsCount[_user] + MAX_CONVERSATIONS_PER_PAGE - 1) /
+      MAX_CONVERSATIONS_PER_PAGE;
+  }
 
-  // function getUserConversations(address _user) external view returns (bytes32[] memory) {
-  //   return userConversations[_user];
-  // }
+  function getConversationBetween(address _user1, address _user2) external view returns (bytes32) {
+    bytes32 conversationId = conversationBetweenUsers[_user1][_user2];
+    if (conversationId == bytes32(0)) revert ConversationNotFound();
+    return conversationId;
+  }
 
-  // function getConversationBetween(address _user1, address _user2) external view returns (bytes32) {
-  //   bytes32 conversationId = conversationBetweenUsers[_user1][_user2];
-  //   if (conversationId == bytes32(0)) revert NoConversationFound();
-  //   return conversationId;
-  // }
+  function getUserConversationsCount(address _user) external view returns (uint256) {
+    return userConversationsCount[_user];
+  }
 
-  // old function
-  // function getConversationBetween(address _user1, address _user2) external view returns (bytes32) {
-  //   bytes32[] memory userConvs = userConversations[_user1];
-  //   for (uint i = 0; i < userConvs.length; i++) {
-  //     address[] memory participants = conversationParticipants[userConvs[i]];
-  //     if (
-  //       (participants[0] == _user1 && participants[1] == _user2) ||
-  //       (participants[0] == _user2 && participants[1] == _user1)
-  //     ) {
-  //       return userConvs[i];
-  //     }
-  //   }
-  //   revert("No conversation found between these users");
-  // }
+  function isParticipant(address _user, bytes32 _conversationId) public view returns (bool) {
+    ConversationInfo[] memory page = userConversationsByPage[_user][0];
+    for (uint i = 0; i < page.length; i++) {
+      if (page[i].conversationId == _conversationId) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   // ************************ PRIVATE FUNCTIONS *********************//
 
-  // function _createConversation(address _user1, address _user2) private returns (bytes32) {
-  //   require(_user1 != address(0), "Invalid participant address");
-  //   require(_user2 != address(0), "Invalid participant address");
+  function _createConversation(address _addr1, address _addr2) private returns (bytes32) {
+    bytes32 existingConversation = conversationBetweenUsers[_addr1][_addr2];
+    if (existingConversation != bytes32(0)) {
+      return existingConversation;
+    }
 
-  //   (address orderedAddr1, address orderedAddr2) = _user1 < _user2
-  //     ? (_user1, _user2)
-  //     : (_user2, _user1);
+    bytes32 conversationId = keccak256(abi.encodePacked(_addr1, _addr2, block.timestamp));
 
-  //   // create conversationId using timestamp and users address
-  //   bytes32 conversationId = keccak256(abi.encodePacked(orderedAddr1, orderedAddr2));
+    conversationBetweenUsers[_addr1][_addr2] = conversationId;
+    conversationBetweenUsers[_addr2][_addr1] = conversationId;
 
-  //   // add participants to conversations
-  //   conversationParticipants[conversationId] = [orderedAddr1, orderedAddr2];
-  //   conversationBetweenUsers[orderedAddr1][orderedAddr2] = conversationId;
-  //   conversationBetweenUsers[orderedAddr2][orderedAddr1] = conversationId;
+    _addConversationToUser(_addr1, _addr2, conversationId);
+    _addConversationToUser(_addr2, _addr1, conversationId);
 
-  //   return conversationId;
-  // }
+    return conversationId;
+  }
+
+  function _addConversationToUser(
+    address user,
+    address interlocutor,
+    bytes32 conversationId
+  ) private {
+    uint256 currentCount = userConversationsCount[user];
+    uint256 pageNumber = currentCount / MAX_CONVERSATIONS_PER_PAGE;
+
+    ConversationInfo memory newConversation = ConversationInfo({
+      conversationId: conversationId,
+      interlocutor: interlocutor,
+      lastMessageTimestamp: block.timestamp,
+      isActive: true
+    });
+
+    userConversationsByPage[user][pageNumber].push(newConversation);
+    userConversationsCount[user]++;
+  }
 }

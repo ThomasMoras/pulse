@@ -1,11 +1,10 @@
 import { loadFixture } from '@nomicfoundation/hardhat-toolbox-viem/network-helpers';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { ethers, network } from 'hardhat';
 import { Pulse } from '../../typechain-types';
 import { beforeEach } from 'mocha';
-import { assert } from 'console';
 import { user1Data, user2Data, user3Data } from './CommonData';
-import { Interaction, SBTMetaData } from './Type';
+import { InteractionStatus, SBTMetaData } from './Type';
 
 describe('Pulse', function () {
   let pulseContract: Pulse;
@@ -108,7 +107,7 @@ describe('Pulse', function () {
     it('Verify that PulseSBT is correctly define and set to Pulse Contract', async () => {});
   });
 
-  describe('Consumption of PulseSBT functions', function () {
+  describe('Accounts features using SBT', function () {
     beforeEach(async () => {
       ({ pulseContract, pulseAddress, owner, user1, user2, user3 } = await loadFixture(fixture));
     });
@@ -170,27 +169,26 @@ describe('Pulse', function () {
     });
   });
 
-  describe('Features design for Pulse standard user', function () {
-    beforeEach('', async () => {
+  describe('Interactions features', function () {
+    beforeEach(async () => {
       ({ pulseContract, owner, user1, user2, user3, user4, user5, user6 } =
         await fixtureWithMints());
     });
 
     it('Should check if the default interaction is NONE', async () => {
-      assert(
-        await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
-        Interaction.NONE.toString()
-      );
+      expect(
+        await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address)
+      ).to.equal(InteractionStatus.NONE);
     });
 
     it('Should be like and emit event', async () => {
       await expect(pulseContract.connect(user1).like(user2.address))
         .emit(pulseContract, 'Interacted')
-        .withArgs(user1.address, user2.address, Interaction.LIKED);
+        .withArgs(user1.address, user2.address, InteractionStatus.LIKED);
 
       assert(
         await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
-        Interaction.LIKED.toString()
+        InteractionStatus.LIKED.toString()
       );
 
       expect(await pulseContract.connect(user1).getReminderLike(user1.address)).to.equal(
@@ -207,7 +205,7 @@ describe('Pulse', function () {
     it('Should revert, already interracted', async () => {
       await pulseContract.connect(user1).like(user2.address);
       await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
-        Interaction.LIKED.toString();
+        InteractionStatus.LIKED.toString();
       await expect(pulseContract.connect(user1).like(user2.address))
         .revertedWithCustomError(pulseContract, 'AlreadyInteracted')
         .withArgs(user1.address, user2.address);
@@ -216,22 +214,22 @@ describe('Pulse', function () {
     it('Should be dislike other user and emit event', async () => {
       await expect(pulseContract.connect(user1).dislike(user2.address))
         .emit(pulseContract, 'Interacted')
-        .withArgs(user1.address, user2.address, Interaction.DISLIKED);
+        .withArgs(user1.address, user2.address, InteractionStatus.DISLIKED);
 
       assert(
         await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
-        Interaction.DISLIKED.toString()
+        InteractionStatus.DISLIKED.toString()
       );
     });
 
     it('Should be use super like on other user and emit event', async () => {
       await expect(pulseContract.connect(user1).superLike(user2.address))
         .emit(pulseContract, 'Interacted')
-        .withArgs(user1.address, user2.address, Interaction.SUPER_LIKED);
+        .withArgs(user1.address, user2.address, InteractionStatus.SUPER_LIKED);
 
       assert(
         await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
-        Interaction.SUPER_LIKED.toString()
+        InteractionStatus.SUPER_LIKED.toString()
       );
     });
 
@@ -242,7 +240,7 @@ describe('Pulse', function () {
 
         await expect(pulseContract.connect(user1).superLike(targetUser.address))
           .emit(pulseContract, 'Interacted')
-          .withArgs(user1.address, targetUser.address, Interaction.SUPER_LIKED);
+          .withArgs(user1.address, targetUser.address, InteractionStatus.SUPER_LIKED);
 
         expect(await pulseContract.connect(user1).getReminderSuperLike(user1.address)).to.equal(
           BigInt(max - i)
@@ -256,15 +254,51 @@ describe('Pulse', function () {
 
     it('Should be match when two user like each other', async () => {
       await pulseContract.connect(user1).like(user2.address);
+      const tx = await pulseContract.connect(user2).like(user1.address);
+      const conversationId = await pulseContract.getConversationBetween(
+        user1.address,
+        user2.address
+      );
+      await expect(tx)
+        .to.emit(pulseContract, 'Match')
+        .withArgs(user2.address, user1.address, conversationId);
+    });
+  });
 
-      await expect(pulseContract.connect(user2).like(user1.address))
-        .emit(pulseContract, 'Match')
-        .withArgs(user2.address, user1.address);
+  describe('Conversations features', function () {
+    beforeEach(async () => {
+      ({ pulseContract, owner, user1, user2, user3, user4, user5, user6 } =
+        await fixtureWithMints());
     });
 
-    it('Should be start a conversation when two user match', async () => {});
+    it('Should revert, no existing conversation', async () => {
+      await expect(
+        pulseContract.getConversationBetween(user1.address, user2.address)
+      ).revertedWithCustomError(pulseContract, 'ConversationNotFound');
+    });
 
-    it('Participant n°1 should be able to send and receive message', async () => {});
+    it('Should be start a conversation when two user match and check participants', async () => {
+      await pulseContract.connect(user1).like(user2.address);
+      await pulseContract.connect(user2).like(user1.address);
+      const conversationId = await pulseContract.getConversationBetween(
+        user1.address,
+        user2.address
+      );
+      assert((await pulseContract.isParticipant(user1.address, conversationId)) == true);
+      assert((await pulseContract.isParticipant(user2.address, conversationId)) == true);
+      assert((await pulseContract.isParticipant(user3.address, conversationId)) == false);
+    });
+
+    it('Participants should be able to send and receive message', async () => {
+      await pulseContract.connect(user1).like(user2.address);
+      await pulseContract.connect(user2).like(user1.address);
+      const conversationId = await pulseContract.getConversationBetween(
+        user1.address,
+        user2.address
+      );
+      await pulseContract.connect(user1).sendMessage(conversationId, 'Hi there');
+      await pulseContract.connect(user2).sendMessage(conversationId, 'Hi, are you fine ?');
+    });
 
     it('Participant n°2 should be able to send and receive message', async () => {});
 
