@@ -1,13 +1,11 @@
-import { time, loadFixture } from '@nomicfoundation/hardhat-toolbox-viem/network-helpers';
+import { loadFixture } from '@nomicfoundation/hardhat-toolbox-viem/network-helpers';
 import { expect } from 'chai';
-import hre, { ethers, network } from 'hardhat';
-import { getAddress, parseGwei } from 'viem';
-import { Pulse, PulseSBT } from '../../typechain-types';
+import { ethers, network } from 'hardhat';
+import { Pulse } from '../../typechain-types';
 import { beforeEach } from 'mocha';
 import { assert } from 'console';
 import { user1Data, user2Data, user3Data } from './CommonData';
-import { Interaction, Interraction, SBTMetaData } from './Type';
-import { calculateAge, formatBirthDate } from './Tool';
+import { Interaction, SBTMetaData } from './Type';
 
 describe('Pulse', function () {
   let pulseContract: Pulse;
@@ -16,9 +14,12 @@ describe('Pulse', function () {
   let user1: any;
   let user2: any;
   let user3: any;
+  let user4: any;
+  let user5: any;
+  let user6: any;
 
   async function fixture() {
-    const [owner, user1, user2, user3] = await ethers.getSigners();
+    const [owner, user1, user2, user3, user4, user5, user6] = await ethers.getSigners();
 
     // Deploiement du contrat SBT
     const sbtContract = await ethers.deployContract('PulseSBT', [], {});
@@ -51,11 +52,15 @@ describe('Pulse', function () {
       user1,
       user2,
       user3,
+      user4,
+      user5,
+      user6,
     };
   }
 
   async function fixtureWithMints() {
-    ({ pulseContract, pulseAddress, owner, user1, user2, user3 } = await loadFixture(fixture));
+    ({ pulseContract, pulseAddress, owner, user1, user2, user3, user4, user5, user6 } =
+      await loadFixture(fixture));
 
     const metadata1 = {
       ...user1Data,
@@ -87,6 +92,9 @@ describe('Pulse', function () {
       user1,
       user2,
       user3,
+      user4,
+      user5,
+      user6,
     };
   }
 
@@ -164,8 +172,17 @@ describe('Pulse', function () {
 
   describe('Features design for Pulse standard user', function () {
     beforeEach('', async () => {
-      ({ pulseContract, owner, user1, user2, user3 } = await fixtureWithMints());
+      ({ pulseContract, owner, user1, user2, user3, user4, user5, user6 } =
+        await fixtureWithMints());
     });
+
+    it('Should check if the default interaction is NONE', async () => {
+      assert(
+        await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
+        Interaction.NONE.toString()
+      );
+    });
+
     it('Should be like and emit event', async () => {
       await expect(pulseContract.connect(user1).like(user2.address))
         .emit(pulseContract, 'Interacted')
@@ -175,14 +192,75 @@ describe('Pulse', function () {
         await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
         Interaction.LIKED.toString()
       );
-      // Ajout test sur l'autorization
+
+      expect(await pulseContract.connect(user1).getReminderLike(user1.address)).to.equal(
+        BigInt(19)
+      );
     });
 
-    it('Should be no like an other user', async () => {});
+    it('Should revert, self interaction', async () => {
+      await expect(pulseContract.connect(user1).like(user1.address))
+        .revertedWithCustomError(pulseContract, 'SelfInteractionCheck')
+        .withArgs(user1.address);
+    });
 
-    it('Should be use super like an other user', async () => {});
+    it('Should revert, already interracted', async () => {
+      await pulseContract.connect(user1).like(user2.address);
+      await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
+        Interaction.LIKED.toString();
+      await expect(pulseContract.connect(user1).like(user2.address))
+        .revertedWithCustomError(pulseContract, 'AlreadyInteracted')
+        .withArgs(user1.address, user2.address);
+    });
 
-    it('Should be match when two user like each other', async () => {});
+    it('Should be dislike other user and emit event', async () => {
+      await expect(pulseContract.connect(user1).dislike(user2.address))
+        .emit(pulseContract, 'Interacted')
+        .withArgs(user1.address, user2.address, Interaction.DISLIKED);
+
+      assert(
+        await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
+        Interaction.DISLIKED.toString()
+      );
+    });
+
+    it('Should be use super like on other user and emit event', async () => {
+      await expect(pulseContract.connect(user1).superLike(user2.address))
+        .emit(pulseContract, 'Interacted')
+        .withArgs(user1.address, user2.address, Interaction.SUPER_LIKED);
+
+      assert(
+        await pulseContract.connect(user1).getInteractionStatus(user1.address, user2.address),
+        Interaction.SUPER_LIKED.toString()
+      );
+    });
+
+    it('Should allow 5 super like by user and revert if exceed this number', async () => {
+      const max = 5;
+      for (let i = 1; i <= max; i++) {
+        const targetUser = (await ethers.getSigners())[i + 5];
+
+        await expect(pulseContract.connect(user1).superLike(targetUser.address))
+          .emit(pulseContract, 'Interacted')
+          .withArgs(user1.address, targetUser.address, Interaction.SUPER_LIKED);
+
+        expect(await pulseContract.connect(user1).getReminderSuperLike(user1.address)).to.equal(
+          BigInt(max - i)
+        );
+      }
+      const targetUser = (await ethers.getSigners())[12];
+      await expect(pulseContract.connect(user1).superLike(targetUser.address)).revertedWith(
+        "You don't have enought super like"
+      );
+    });
+
+    it('Should be match when two user like each other', async () => {
+      await pulseContract.connect(user1).like(user2.address);
+
+      await expect(pulseContract.connect(user2).like(user1.address))
+        .emit(pulseContract, 'Match')
+        .withArgs(user2.address, user1.address);
+    });
 
     it('Should be start a conversation when two user match', async () => {});
 
