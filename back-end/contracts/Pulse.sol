@@ -208,6 +208,7 @@ contract Pulse is Ownable {
     if (!isActive(_recipient)) revert UserNotActive(_recipient);
     return hasInteracted[_user][_recipient];
   }
+
   function getUserConversationsPage(
     address _user,
     uint256 _page
@@ -236,6 +237,12 @@ contract Pulse is Ownable {
       }
     }
     return false;
+  }
+
+  function getConversationMessages(
+    bytes32 _conversationId
+  ) external view onlyParticipants(_conversationId) returns (Message[] memory) {
+    return conversations[_conversationId];
   }
 
   // ************************ PRIVATE FUNCTIONS *********************//

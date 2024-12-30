@@ -3,8 +3,9 @@ import { assert, expect } from 'chai';
 import { ethers, network } from 'hardhat';
 import { Pulse } from '../../typechain-types';
 import { beforeEach } from 'mocha';
-import { user1Data, user2Data, user3Data } from './CommonData';
-import { InteractionStatus, SBTMetaData } from './Type';
+import { user1Data, user2Data, user3Data } from './utils/CommonData';
+import { InteractionStatus, SBTMetaData } from './utils/Type';
+import { LitEncryption } from './utils/lit-encryption';
 
 describe('Pulse', function () {
   let pulseContract: Pulse;
@@ -16,6 +17,7 @@ describe('Pulse', function () {
   let user4: any;
   let user5: any;
   let user6: any;
+  let litEncryption: LitEncryption;
 
   async function fixture() {
     const [owner, user1, user2, user3, user4, user5, user6] = await ethers.getSigners();
@@ -290,17 +292,77 @@ describe('Pulse', function () {
     });
 
     it('Participants should be able to send and receive message', async () => {
+      const ethereumSepoliaEncryption = new LitEncryption('ethereum', true);
+      await ethereumSepoliaEncryption.connect();
+
       await pulseContract.connect(user1).like(user2.address);
       await pulseContract.connect(user2).like(user1.address);
+
       const conversationId = await pulseContract.getConversationBetween(
         user1.address,
         user2.address
       );
-      await pulseContract.connect(user1).sendMessage(conversationId, 'Hi there');
-      await pulseContract.connect(user2).sendMessage(conversationId, 'Hi, are you fine ?');
+      // commentaire pour expliciter le processus d'encryptage et decryptage
+
+      // Premier message : user1 -> user2
+      const message1 = 'Hello! How are you?';
+      // user1 chiffre pour user2
+      const encryptedMessage1 = await ethereumSepoliaEncryption.encryptMessage(
+        message1,
+        user2.address, // destinataire
+        user1 // expéditeur qui chiffre
+      );
+      await pulseContract.connect(user1).sendMessage(conversationId, encryptedMessage1);
+
+      // Deuxième message : user2 -> user1
+      const message2 = 'I am fine, thank you!';
+      // user2 chiffre pour user1
+      const encryptedMessage2 = await ethereumSepoliaEncryption.encryptMessage(
+        message2,
+        user1.address, // destinataire
+        user2 // expéditeur qui chiffre
+      );
+      await pulseContract.connect(user2).sendMessage(conversationId, encryptedMessage2);
+
+      // Récupération des messages
+      const messages = await pulseContract.connect(user1).getConversationMessages(conversationId);
+      expect(messages).to.be.an('array');
+      expect(messages.length).to.equal(2);
+
+      // user2 déchiffre le message de user1
+      const decryptedMessage1 = await ethereumSepoliaEncryption.decryptMessage(
+        messages[0].encryptedContent,
+        user2.address, // destinataire qui déchiffre
+        user2 // signer du destinataire
+      );
+      expect(decryptedMessage1).to.equal(message1);
+      // user1 déchiffre le message de user2
+      const decryptedMessage2 = await ethereumSepoliaEncryption.decryptMessage(
+        messages[1].encryptedContent,
+        user1.address, // destinataire qui déchiffre
+        user1 // signer du destinataire
+      );
+
+      expect(decryptedMessage2).to.equal(message2);
     });
 
-    it('Participant n°2 should be able to send and receive message', async () => {});
+    // Tests pour différentes chaînes
+    describe('Multi-chain encryption', () => {
+      before(async () => {
+        let baseEncryption: LitEncryption = new LitEncryption('base', true);
+        let arbitrumEncryption: LitEncryption = new LitEncryption('arbitrum', true);
+        await baseEncryption.connect();
+        await arbitrumEncryption.connect();
+      });
+
+      it('should encrypt/decrypt on Base', async () => {
+        // Tests spécifiques à Base
+      });
+
+      it('should encrypt/decrypt on Arbitrum', async () => {
+        // Tests spécifiques à Arbitrum
+      });
+    });
 
     it('Should revert, only the two participants can send message inside their conversation', async () => {});
   });
