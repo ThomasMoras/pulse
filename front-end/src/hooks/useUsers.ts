@@ -14,7 +14,6 @@ interface UseUsersParams {
 export function useUsers({ filters }: UseUsersParams) {
   const [users, setUsers] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
   const BATCH_SIZE = 10;
@@ -23,45 +22,62 @@ export function useUsers({ filters }: UseUsersParams) {
     data: rawBatch,
     isError,
     isLoading,
+    refetch: refetchContract,
   } = useReadContract({
     address: pulseContract.address,
     abi: pulseContract.abi,
     functionName: "getBatchOfUsers",
     args: [BigInt(BATCH_SIZE), BigInt(currentPage * BATCH_SIZE), filters],
+    enabled: true,
   });
 
-  // Traitement des données quand rawBatch change
+  // Traitement des données du contrat
   useEffect(() => {
-    console.log("RawBatch changed:", rawBatch);
-    if (!rawBatch || loading) return;
+    if (!rawBatch) return;
 
-    const [newUsers, count] = rawBatch as [any[], bigint];
-    const cleanUsers = newUsers.filter(
-      (user) => user.firstName !== "" && user.email !== "" && user.birthday !== 0n
-    );
-    console.log("Clean users:", cleanUsers);
+    try {
+      const [newUsers, count] = rawBatch as [any[], bigint];
+      const cleanUsers = newUsers.filter(
+        (user) => user.firstName !== "" && user.email !== "" && user.birthday !== 0n
+      );
 
-    if (currentPage === 0) {
       setUsers(cleanUsers);
-    } else {
-      setUsers((prev) => [...prev, ...cleanUsers]);
+      setHasMore(cleanUsers.length === BATCH_SIZE);
+    } catch (error) {
+      console.error("Error processing users:", error);
     }
-    setHasMore(cleanUsers.length === BATCH_SIZE);
-  }, [rawBatch, currentPage]);
+  }, [rawBatch]);
 
+  // Chargement de plus de profils
   const loadMore = useCallback(() => {
-    if (loading || !hasMore) return;
+    if (isLoading || !hasMore) return;
     setCurrentPage((prev) => prev + 1);
-  }, [loading, hasMore]);
+  }, [isLoading, hasMore]);
 
-  // Reset uniquement lorsque les filtres changent
-  const filtersKey = JSON.stringify(filters);
+  // Fonction de refetch
+  const refetch = useCallback(async () => {
+    setCurrentPage(0);
+    try {
+      const result = await refetchContract();
+      return result;
+    } catch (error) {
+      console.error("Error refetching:", error);
+      return null;
+    }
+  }, [refetchContract]);
+
+  // Montage initial
   useEffect(() => {
-    console.log("Filters changed, resetting...");
+    refetch();
+  }, [refetch]);
+
+  // Reset des filtres
+  const resetFilters = useCallback(() => {
     setUsers([]);
     setCurrentPage(0);
     setHasMore(true);
-  }, [filtersKey]);
+    refetch();
+  }, [refetch]);
 
   return {
     users,
@@ -69,10 +85,7 @@ export function useUsers({ filters }: UseUsersParams) {
     error: isError,
     hasMore,
     loadMore,
-    resetFilters: useCallback(() => {
-      setUsers([]);
-      setCurrentPage(0);
-      setHasMore(true);
-    }, []),
+    refetch,
+    resetFilters,
   };
 }

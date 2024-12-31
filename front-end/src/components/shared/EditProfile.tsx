@@ -27,6 +27,7 @@ import { EnumSelect } from "../ui/custom/enum-select";
 import { formatBirthDate } from "@/utils/date.utils";
 import { usePinata } from "@/hooks/usePinata";
 import { Textarea } from "../ui/textarea";
+import Link from "next/link";
 
 export function EditProfile() {
   const router = useRouter();
@@ -250,7 +251,9 @@ export function EditProfile() {
             </Button>
             <Button
               type="button"
-              onClick={() => router.push("/")}
+              onClick={() => {
+                router.replace("/");
+              }}
               className="bg-gray-400 hover:bg-gray-600"
             >
               Retour

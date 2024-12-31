@@ -10,18 +10,15 @@ const Dashboard = () => {
   useEffect(() => {}, [isAccountCreated]);
 
   return (
-    <div className="flex flex-col space-y-10 px-4">
-      <div className="flex justify-center">
+    <div className="min-h-screen w-full">
+      <div className="container mx-auto px-4 py-8">
         {!isAccountCreated ? (
-          <div className="w-1/3">
+          <div className="w-1/3 mx-auto">
             <CreateAccount />
           </div>
         ) : (
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Bienvenue sur la page Home !</h1>
-            <div className="pt-4">
-              <Swiper />
-            </div>
+          <div className="flex justify-center items-center w-full">
+            <Swiper />
           </div>
         )}
       </div>

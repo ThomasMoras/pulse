@@ -4,8 +4,7 @@ import { Gender } from "@/types";
 import { calculateAge } from "@/utils/date.utils";
 import { FC } from "react";
 import { User as UserIcon, MapPin, Heart } from "lucide-react";
-
-const DEFAULT_PROFILE_URL = "https://purple-just-alpaca-870.mypinata.cloud/ipfs/";
+import { DEFAULT_PROFILE_URL } from "@/types/pinata.types";
 
 interface UserCardProps {
   user: User;
