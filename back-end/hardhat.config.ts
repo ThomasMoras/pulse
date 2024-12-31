@@ -1,18 +1,14 @@
-import { HardhatUserConfig } from "hardhat/config";
-import "@nomicfoundation/hardhat-toolbox";
-import "@nomicfoundation/hardhat-foundry";
-import "@nomiclabs/hardhat-solhint";
-import "solidity-docgen";
-import "dotenv/config";
+// hardhat.config.ts
+import { HardhatUserConfig } from 'hardhat/config';
+import '@nomicfoundation/hardhat-toolbox';
+import { NETWORK_CONFIGS, NetworkType } from './config/networks';
+import * as dotenv from 'dotenv';
 
-const { ALCHEMY_API_KEY, ETHERSCAN_API_KEY, PRIVATE_KEY } = process.env;
-
-// console.log(ALCHEMY_API_KEY);
+dotenv.config();
 
 const config: HardhatUserConfig = {
-  docgen: { outputDir: "doc" },
   solidity: {
-    version: "0.8.28",
+    version: '0.8.28',
     settings: {
       optimizer: {
         enabled: true,
@@ -22,19 +18,27 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      chainId: 31337,
+      chainId: NETWORK_CONFIGS[NetworkType.LOCAL].chainId,
     },
     // sepolia: {
-    //   accounts: [`0x${PRIVATE_KEY}`],
-    //   chainId: 11155111,
-    //   url: ALCHEMY_API_KEY,
+    //   url: NETWORK_CONFIGS[NetworkType.SEPOLIA].rpcUrl,
+    //   accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // 'base-sepolia': {
+    //   url: NETWORK_CONFIGS[NetworkType.BASE_TESTNET].rpcUrl,
+    //   accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+    // },
+    // 'arbitrum-sepolia': {
+    //   url: NETWORK_CONFIGS[NetworkType.ARBITRUM_TESTNET].rpcUrl,
+    //   accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     // },
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
-  },
-  gasReporter: {
-    enabled: true,
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY || '',
+      baseSepolia: process.env.BASESCAN_API_KEY || '',
+      arbitrumSepolia: process.env.ARBISCAN_API_KEY || '',
+    },
   },
 };
 

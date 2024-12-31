@@ -4,7 +4,7 @@ export const user1Data = {
   firstName: 'FirstName1',
   description: 'Descritpion user1',
   email: 'firstname1@gmail.com',
-  birthday: 788918400, // 1995-01-01 (correspond à 26 ans)
+  birthday: 929685600, // 26 years
   gender: Gender.Male,
   interestedBy: [Gender.Female],
   localisation: 'Lyon',
@@ -20,7 +20,7 @@ export const user2Data = {
   firstName: 'FirstName2',
   description: 'Descritpion user2',
   email: 'firstname2@gmail.com',
-  birthday: 662688000, // 1991-01-01 (correspond à 32 ans)
+  birthday: 662688000, // 34 years
   gender: Gender.Female,
   interestedBy: [Gender.Male, Gender.NonBinary],
   localisation: 'Paris',
@@ -36,11 +36,27 @@ export const user3Data = {
   firstName: 'FirstName3',
   description: 'Descritpion user3',
   email: 'firstname3@gmail.com',
-  birthday: 915148800, // 1999-01-01 (correspond à 19 ans)
+  birthday: 1055916000, // 22 years
   gender: Gender.Undisclosed,
   interestedBy: [Gender.Male, Gender.Female],
   localisation: 'Toulouse',
   hobbies: ['Drawing', 'Photography'],
+  note: 0,
+  ipfsHashs: [],
+  issuedAt: Math.floor(Date.now() / 1000),
+  issuer: '0x0000000000000000000000000000000000000000',
+  isActive: true,
+};
+
+export const user4Data = {
+  firstName: 'FirstName4',
+  description: 'Descritpion user4',
+  email: 'firstname4@gmail.com',
+  birthday: 397893600, // 42 years
+  gender: Gender.Female,
+  interestedBy: [Gender.Male],
+  localisation: 'Marseille',
+  hobbies: ['Reading', 'Sking'],
   note: 0,
   ipfsHashs: [],
   issuedAt: Math.floor(Date.now() / 1000),

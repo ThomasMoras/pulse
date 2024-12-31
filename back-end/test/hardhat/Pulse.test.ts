@@ -3,7 +3,7 @@ import { assert, expect } from 'chai';
 import { ethers, network } from 'hardhat';
 import { Pulse } from '../../typechain-types';
 import { beforeEach } from 'mocha';
-import { user1Data, user2Data, user3Data } from './utils/CommonData';
+import { user1Data, user2Data, user3Data, user4Data } from './utils/CommonData';
 import { InteractionStatus, SBTMetaData } from './utils/Type';
 import { LitEncryption } from './utils/lit-encryption';
 
@@ -78,6 +78,11 @@ describe('Pulse', function () {
       issuer: pulseAddress,
     };
 
+    const metadata4 = {
+      ...user4Data,
+      issuer: pulseAddress,
+    };
+
     const tx1 = await pulseContract.createAccount(user1.address, metadata1);
     await tx1.wait();
 
@@ -86,6 +91,9 @@ describe('Pulse', function () {
 
     const tx3 = await pulseContract.createAccount(user3.address, metadata3);
     await tx3.wait();
+
+    const tx4 = await pulseContract.createAccount(user4.address, metadata4);
+    await tx4.wait();
 
     return {
       pulseContract,
@@ -365,6 +373,101 @@ describe('Pulse', function () {
     });
 
     it('Should revert, only the two participants can send message inside their conversation', async () => {});
+  });
+
+  describe('Get users by filters features', function () {
+    beforeEach(async () => {
+      ({ pulseContract, owner, user1, user2, user3, user4, user5, user6 } =
+        await fixtureWithMints());
+    });
+
+    it('Should get batch of users with age filter', async () => {
+      const criteria = {
+        minAge: 20,
+        maxAge: 30,
+        gender: 4, // Undisclosed
+      };
+
+      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      const validUsers = users.slice(0, Number(count));
+      expect(validUsers.length).to.be.greaterThan(0);
+
+      for (const user of validUsers) {
+        const age = Math.floor((Date.now() / 1000 - Number(user.birthday)) / (365 * 24 * 60 * 60));
+        expect(age).to.be.greaterThanOrEqual(criteria.minAge);
+        expect(age).to.be.lessThanOrEqual(criteria.maxAge);
+      }
+    });
+
+    it('Should get batch of users with gender filter', async () => {
+      const criteria = {
+        minAge: 18,
+        maxAge: 99,
+        gender: 1, // Female
+      };
+
+      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      const validUsers = users.slice(0, Number(count));
+      expect(count).to.be.equal(2);
+
+      for (const user of validUsers) {
+        expect(user.gender).to.equal(criteria.gender);
+      }
+    });
+
+    it('Should get batch of users with gender and age filter', async () => {
+      const criteria = {
+        minAge: 30,
+        maxAge: 40,
+        gender: 1, // Female
+      };
+
+      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      const validUsers = users.slice(0, Number(count));
+
+      for (const user of validUsers) {
+        expect(user.gender).to.equal(criteria.gender);
+      }
+    });
+
+    it('Should return empty array when no users match criteria', async () => {
+      const criteria = {
+        minAge: 99,
+        maxAge: 100,
+        gender: 0,
+      };
+
+      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      expect(count).to.equal(0);
+    });
+
+    it('Should handle pagination correctly', async () => {
+      const criteria = {
+        minAge: 18,
+        maxAge: 99,
+        gender: 4, // Undisclosed
+      };
+
+      const [batch1, count1] = await pulseContract.getBatchOfUsers(2, 0, criteria);
+      const [batch2, count2] = await pulseContract.getBatchOfUsers(2, 2, criteria);
+
+      const validBatch1 = batch1.slice(0, Number(count1));
+      const validBatch2 = batch2.slice(0, Number(count2));
+
+      expect(validBatch1).to.not.deep.equal(validBatch2);
+    });
+
+    it('Should revert with invalid start index', async () => {
+      const criteria = {
+        minAge: 18,
+        maxAge: 30,
+        gender: 4,
+      };
+
+      await expect(pulseContract.getBatchOfUsers(10, 999999, criteria)).to.be.revertedWith(
+        'Invalid start'
+      );
+    });
   });
 
   describe('Features design for Admin user', function () {});

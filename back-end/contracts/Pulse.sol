@@ -7,6 +7,7 @@ import "./utils/structs/SBTMetaData.sol";
 import "./utils/structs/Message.sol";
 import "./utils/structs/ConversationInfo.sol";
 import "./utils/enum/InteractionStatus.sol";
+import "./utils/enum/FilterCriteria.sol";
 
 /**
  * @title Pulse
@@ -21,7 +22,9 @@ contract Pulse is Ownable {
   uint8 public constant SUPER_LIKE_PER_DAY = 5;
   address public pulseSBTAddress;
   IPulseSBT public pulseSBT;
+  uint256 public userCount;
 
+  mapping(uint256 => address) public userIndexToAddress;
   mapping(address => bool) isRegistred;
   mapping(address => mapping(address => InteractionStatus)) private hasInteracted;
   mapping(address => uint8) userSuperLike;
@@ -103,6 +106,8 @@ contract Pulse is Ownable {
     isRegistred[_recipient] = true;
     userLike[_recipient] = LIKE_PER_DAY;
     userSuperLike[_recipient] = SUPER_LIKE_PER_DAY;
+    userIndexToAddress[userCount] = _recipient;
+    userCount++;
     emit AccountCreate(_recipient);
     return tokenId;
   }
@@ -178,6 +183,53 @@ contract Pulse is Ownable {
   function createEvent(address _sender) external onlyPulsePartners {}
 
   // ************************ GETTERS FUNCTIONS *********************//
+
+  // Fonction de récupération des utilisateurs avec filtres
+  function getBatchOfUsers(
+    uint256 batchSize,
+    uint256 startIndex,
+    FilterCriteria memory criteria
+  ) external view returns (SBTMetaData[] memory batch, uint256 count) {
+    require(startIndex < userCount, "Invalid start");
+
+    batch = new SBTMetaData[](batchSize);
+
+    for (uint256 i = startIndex; count < batchSize && i < userCount; i++) {
+      address userAddress = userIndexToAddress[i];
+      SBTMetaData memory user = pulseSBT.getSBTMetaDataByUser(userAddress);
+      if (isValidUserWithCriteria(userAddress, user, criteria)) {
+        batch[count] = user;
+        unchecked {
+          ++count;
+        }
+      }
+    }
+  }
+
+  function isValidUserWithCriteria(
+    address userAddress,
+    SBTMetaData memory user,
+    FilterCriteria memory criteria
+  ) internal view returns (bool) {
+    if (
+      !user.isActive ||
+      userAddress == msg.sender ||
+      hasInteracted[msg.sender][userAddress] != InteractionStatus.NONE
+    ) {
+      return false;
+    }
+
+    uint256 age = (block.timestamp - user.birthday) / 365 days;
+    if (age < criteria.minAge || age > criteria.maxAge) {
+      return false;
+    }
+
+    // Si gender est Undisclosed, on accepte tous les genres
+    if (criteria.gender != Gender.Undisclosed && user.gender != criteria.gender) {
+      return false;
+    }
+    return true;
+  }
 
   // add security sender and admin
   function getReminderLike(address _user) external view returns (uint8) {
