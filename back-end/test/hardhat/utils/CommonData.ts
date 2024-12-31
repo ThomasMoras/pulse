@@ -10,7 +10,7 @@ export const user1Data = {
   localisation: 'Lyon',
   hobbies: ['Tennis'],
   note: 0,
-  ipfsHashs: [],
+  ipfsHashs: ['bafkreiawpxy2ai6m26v5prk5jdbf3acfhsxrmrutvmv6ku4hpmbuhp6hbq'],
   issuedAt: Math.floor(Date.now() / 1000), // Timestamp actuel
   issuer: '0x0000000000000000000000000000000000000000',
   isActive: true,
@@ -26,7 +26,7 @@ export const user2Data = {
   localisation: 'Paris',
   hobbies: ['Running', 'Yoga'],
   note: 0,
-  ipfsHashs: [],
+  ipfsHashs: ['bafybeiht6xwg42yxl25r7wbqkfztowefk7laov2viqyzd4om33oqma2lnq'],
   issuedAt: Math.floor(Date.now() / 1000),
   issuer: '0x0000000000000000000000000000000000000000',
   isActive: true,
@@ -42,7 +42,7 @@ export const user3Data = {
   localisation: 'Toulouse',
   hobbies: ['Drawing', 'Photography'],
   note: 0,
-  ipfsHashs: [],
+  ipfsHashs: ['bafybeihfqju4i3i7vyvfaxlzkj2hzsjjt2g5trhlqa2qf6hkypkq6nn5x4'],
   issuedAt: Math.floor(Date.now() / 1000),
   issuer: '0x0000000000000000000000000000000000000000',
   isActive: true,
@@ -58,8 +58,10 @@ export const user4Data = {
   localisation: 'Marseille',
   hobbies: ['Reading', 'Sking'],
   note: 0,
-  ipfsHashs: [],
+  ipfsHashs: ['bafkreidfdjr5abqvjprnfbokr67xs6jj4fwavebssqdp7c6s32es25wzou'],
   issuedAt: Math.floor(Date.now() / 1000),
   issuer: '0x0000000000000000000000000000000000000000',
   isActive: true,
 };
+
+export const usersList = [user1Data, user2Data, user3Data, user4Data];
