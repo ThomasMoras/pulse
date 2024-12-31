@@ -11,6 +11,7 @@ export enum Gender {
 
 export interface SBTMetaData {
   firstName: string;
+  description: string;
   email: string;
   birthday: number;
   gender: Gender;
@@ -21,6 +22,7 @@ export interface SBTMetaData {
   ipfsHashs: string[];
   issuedAt: number;
   issuer: string;
+  isActive: boolean;
 }
 
 export type ProfilData = z.infer<typeof profilSchema>;

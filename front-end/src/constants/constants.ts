@@ -2,6 +2,7 @@ import { Gender, ProfilData } from "@/types";
 
 export const DEFAULT_FORM_VALUES: ProfilData = {
   firstName: "",
+  description: "",
   email: "",
   birthday: new Date(),
   gender: Gender.Undisclosed,

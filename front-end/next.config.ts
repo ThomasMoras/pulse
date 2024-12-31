@@ -11,7 +11,11 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ["gateway.pinata.cloud"], // Permet l'utilisation des images depuis Pinata
+    domains: [
+      "gateway.pinata.cloud",
+      "imgs.search.brave.com",
+      "purple-just-alpaca-870.mypinata.cloud",
+    ], // Permet l'utilisation des images depuis Pinata
   },
 };
 

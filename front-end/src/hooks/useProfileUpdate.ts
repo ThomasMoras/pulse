@@ -19,6 +19,7 @@ export function useProfileUpdate() {
         const updatedData = {
           ...currentProfile,
           firstName: formData.firstName,
+          description: formData.description,
           email: formData.email,
           birthday: formData.birthday,
           gender: formData.gender,
@@ -30,6 +31,7 @@ export function useProfileUpdate() {
 
         const contractData = {
           firstName: updatedData.firstName,
+          description: updatedData.description,
           email: updatedData.email,
           birthday: dateToTimestamp(updatedData.birthday),
           gender: updatedData.gender,
@@ -40,6 +42,7 @@ export function useProfileUpdate() {
           ipfsHashs: updatedData.ipfsHashs as readonly string[],
           issuedAt: BigInt(updatedData.issuedAt),
           issuer: updatedData.issuer as `0x${string}`,
+          isActive: updatedData.isActive,
         };
 
         await writeContract({

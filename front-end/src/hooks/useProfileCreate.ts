@@ -23,17 +23,21 @@ export function useProfileCreate() {
         const updatedData = {
           ...currentProfile,
           firstName: formData.firstName,
+          description: formData.description,
           email: formData.email,
           birthday: formData.birthday,
           gender: formData.gender,
           ipfsHashs: formData.images,
+          note: 0,
           interestedBy: formData.interestedBy,
           issuedAt: Date.now(),
+          isActive: true,
         };
+        console.log(address);
         console.log(updatedData);
-
         const contractData = {
           firstName: updatedData.firstName,
+          description: updatedData.description,
           email: updatedData.email,
           birthday: dateToTimestamp(updatedData.birthday),
           gender: updatedData.gender,
@@ -44,8 +48,8 @@ export function useProfileCreate() {
           ipfsHashs: updatedData.ipfsHashs as readonly string[],
           issuedAt: BigInt(updatedData.issuedAt),
           issuer: updatedData.issuer as `0x${string}`,
+          isActive: updatedData.isActive,
         };
-
         await writeContract({
           ...pulseContract,
           functionName: "createAccount",

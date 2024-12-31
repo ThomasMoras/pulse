@@ -25,3 +25,5 @@ export interface PinListResponse {
   }>;
   count: number;
 }
+
+export const DEFAULT_PROFILE_URL = "https://purple-just-alpaca-870.mypinata.cloud/ipfs/";

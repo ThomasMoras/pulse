@@ -5,6 +5,9 @@ const profilSchema = z.object({
   firstName: z.string().min(2, {
     message: "Le prénom doit avoir au moins 2 caractères.",
   }),
+  description: z.string().max(250, {
+    message: "La description ne doit pas comporter plus de 250 caractères.",
+  }),
   email: z.string().email({
     message: "Adresse email invalide.",
   }),

@@ -26,6 +26,7 @@ import { useRouter } from "next/navigation";
 import { EnumSelect } from "../ui/custom/enum-select";
 import { formatBirthDate } from "@/utils/date.utils";
 import { usePinata } from "@/hooks/usePinata";
+import { Textarea } from "../ui/textarea";
 
 export function EditProfile() {
   const router = useRouter();
@@ -50,6 +51,7 @@ export function EditProfile() {
     console.log(profile);
     const resetData = {
       firstName: profile.firstName,
+      description: profile.description,
       email: profile.email,
       birthday: formatBirthDate(Number(profile.birthday)),
       gender: genderValue,
@@ -129,7 +131,19 @@ export function EditProfile() {
               </FormItem>
             )}
           />
-
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Votre description" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="email"

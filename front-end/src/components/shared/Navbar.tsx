@@ -53,6 +53,11 @@ const Navbar = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>Mes avantages</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Link onClick={handleAvatarClick} href={"/admin"}>
+                    Admin
+                  </Link>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

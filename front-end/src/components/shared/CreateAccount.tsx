@@ -24,6 +24,7 @@ import profilSchema from "@/utils/schemas/profil";
 import { useProfileCreate } from "@/hooks/useProfileCreate";
 import { EnumSelect } from "../ui/custom/enum-select";
 import { usePinata } from "@/hooks/usePinata";
+import { Textarea } from "../ui/textarea";
 
 export function CreateAccount() {
   const router = useRouter();
@@ -53,11 +54,10 @@ export function CreateAccount() {
         <h1 className="px-4 text-2xl font-semibold">Création du compte</h1>
         <div className="flex-grow border-t border-gray-300" />
       </div>
-
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(async (formData) => {
-            if (!address || !profile) return;
+            if (!address) return;
             const updatedFormData = { ...formData };
             if (formData.images?.length) {
               try {
@@ -72,6 +72,7 @@ export function CreateAccount() {
                 // Gérer l'erreur
               }
             }
+            console.log("before createProfile");
             await createProfile(address, updatedFormData, profile);
           })}
           className="space-y-6"
@@ -84,6 +85,19 @@ export function CreateAccount() {
                 <FormLabel>Prénom</FormLabel>
                 <FormControl>
                   <Input placeholder="Votre prénom" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Votre description" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
