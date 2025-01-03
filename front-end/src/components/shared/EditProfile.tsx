@@ -48,7 +48,6 @@ export function EditProfile() {
       console.error("Invalid gender value:", genderValue);
       return;
     }
-    console.log(profile);
     const resetData = {
       firstName: profile.firstName,
       description: profile.description,
@@ -59,7 +58,6 @@ export function EditProfile() {
       interestedBy: profile.interestedBy,
     };
     form.reset(resetData);
-    console.log(form.getValues());
   }, [profile, form]);
   if (error) {
     return <div className="text-center p-4 text-red-500">Erreur lors du chargement du profil</div>;
@@ -85,7 +83,6 @@ export function EditProfile() {
             const updatedFormData = { ...formData };
             if (formData.images?.length) {
               try {
-                console.log(formData.images);
                 const ipfsHashes = formData.images
                   .filter((file) => typeof file === "string")
                   .map((url) => {
@@ -109,7 +106,6 @@ export function EditProfile() {
               }
             }
             await updateProfile(address, updatedFormData, profile);
-            console.log("Profile updated successfully");
           })}
           className="space-y-6"
         >

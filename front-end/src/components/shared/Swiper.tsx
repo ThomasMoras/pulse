@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Heart, ThumbsDown, Star } from "lucide-react";
@@ -12,6 +12,9 @@ import { cardVariants } from "@/utils/animation";
 import { ActionButton } from "../utils/ActionButton";
 import { UserProfile } from "../utils/UserProfile";
 import { User } from "@/types/swiper.types";
+import { useProfileData } from "@/hooks/useProfileData";
+import { useAccount } from "wagmi";
+import { useMatch } from "@/contexts/matchContext";
 
 const LoadingState = () => (
   <div className="w-full max-w-sm mx-auto flex justify-center items-center h-[580px]">
@@ -69,6 +72,11 @@ const SwiperCard: React.FC<SwiperCardProps> = ({
 );
 
 const Swiper: React.FC = () => {
+  // Suppression du prop onMatch
+  const { address } = useAccount();
+  const { isLoading, data: profile, error } = useProfileData(address);
+  const { addMatch } = useMatch();
+
   const filters = useMemo(
     () => ({
       minAge: 1,
@@ -80,24 +88,28 @@ const Swiper: React.FC = () => {
 
   const { users, loading, hasMore, loadMore, refetch, removeUser } = useUsers({ filters });
 
-  const { interact, isPending } = useInteraction((recipient) => {
-    console.log("Use interaction callback triggered with recipient:", recipient);
+  const { interact, isPending, logMatchData } = useInteraction((recipient) => {
     removeUser(recipient);
   });
 
   useEffect(() => {
-    if (users) {
-      refetch();
-      console.log(users);
+    if (logMatchData) {
+      console.log("Match data updated:", logMatchData);
+      addMatch(logMatchData);
     }
-  }, [users, refetch]);
+  }, [logMatchData, addMatch]);
+
+  useEffect(() => {
+    if (profile) {
+      console.log("profile : ", profile);
+      if (profile.interestedBy.length > 0) filters.gender = profile.interestedBy[0];
+    }
+  }, [filters, profile]);
 
   const {
     direction,
     currentIndex,
-    // dragStart,
     setDragStart,
-    // handleSwipe,
     handleLike,
     handleDislike,
     handleSuperLike,

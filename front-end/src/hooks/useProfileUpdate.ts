@@ -18,6 +18,7 @@ export function useProfileUpdate() {
       try {
         const updatedData = {
           ...currentProfile,
+          userAddress: address,
           firstName: formData.firstName,
           description: formData.description,
           email: formData.email,
@@ -29,6 +30,7 @@ export function useProfileUpdate() {
         };
 
         const contractData = {
+          userAddress: updatedData.userAddress,
           firstName: updatedData.firstName,
           description: updatedData.description,
           email: updatedData.email,
@@ -43,7 +45,6 @@ export function useProfileUpdate() {
           issuer: updatedData.issuer as `0x${string}`,
           isActive: updatedData.isActive,
         };
-
         await writeContract({
           ...pulseContract,
           functionName: "updateAccount",

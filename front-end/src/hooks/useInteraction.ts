@@ -4,15 +4,63 @@ import { pulseContract } from "@/contracts/pulse.contract";
 import { InteractionStatus } from "@/types";
 import { useWatchContractEvent, useAccount } from "wagmi";
 
+interface LogMatchData {
+  sender: string;
+  recipient: string;
+  conversationId: string;
+}
+
 export function useInteraction(onSuccess?: (recipient: string) => void) {
   const [processedTransactions, setProcessedTransactions] = useState(new Set());
   const { address: userAddress } = useAccount();
+  const [logMatchData, setlogMatchData] = useState<LogMatchData>();
 
   const handleContractSuccess = useCallback(() => {
     // Le callback sera vide car on gère tout via l'événement
   }, []);
 
   const { writeContract, isPending, transactionHash } = useContract(handleContractSuccess);
+
+  useWatchContractEvent({
+    address: pulseContract.address,
+    abi: pulseContract.abi,
+    eventName: "Match",
+    onLogs(logs) {
+      logs.forEach((log) => {
+        if (
+          log.transactionHash === transactionHash &&
+          !processedTransactions.has(log.transactionHash)
+        ) {
+          console.log("🎯 Processing Match event:", {
+            hash: log.transactionHash,
+            currentUser: userAddress,
+            args: log.args,
+          });
+
+          setProcessedTransactions((prevSet) => new Set(prevSet).add(log.transactionHash));
+
+          try {
+            const sender = log.args.sender;
+            const recipient = log.args.receiver;
+            const conversationId = log.args.conversationId;
+
+            console.log("📝 Match details:", {
+              sender,
+              recipient,
+              conversationId,
+              currentUser: userAddress,
+            });
+            setlogMatchData({ sender, recipient, conversationId });
+            if (onSuccess && recipient) {
+              onSuccess(recipient as string);
+            }
+          } catch (error) {
+            console.error("Error processing Match:", error);
+          }
+        }
+      });
+    },
+  });
 
   useWatchContractEvent({
     address: pulseContract.address,
@@ -93,5 +141,5 @@ export function useInteraction(onSuccess?: (recipient: string) => void) {
     [writeContract, userAddress]
   );
 
-  return { interact, isPending };
+  return { interact, isPending, logMatchData };
 }

@@ -20,8 +20,6 @@ export function useUsers({ filters }: UseUsersParams) {
   const { address } = useAccount();
   const BATCH_SIZE = 10;
 
-  console.log("🔑 Connected user address:", address);
-
   // Récupération du batch d'utilisateurs
   const {
     data: rawBatch,
@@ -39,31 +37,13 @@ export function useUsers({ filters }: UseUsersParams) {
   // Traitement des données
   useEffect(() => {
     if (!rawBatch) {
-      console.log("❌ No raw batch data received");
       return;
     }
 
-    console.log("📦 Raw batch received:", rawBatch);
-
     try {
       const [newUsers, count] = rawBatch as [any[], bigint];
-
-      console.log("🔢 Total users in batch:", newUsers.length);
-      console.log("🔢 Batch count:", count);
-
-      // Filtrage de base
       const validUsers = newUsers.filter((user) => {
         const isValid = user.firstName !== "" && user.email !== "" && user.birthday !== 0n;
-
-        if (!isValid) {
-          console.log("❌ User filtered out:", {
-            firstName: user.firstName,
-            email: user.email,
-            birthday: user.birthday,
-            reason: "Invalid basic fields",
-          });
-        }
-
         return isValid;
       });
 

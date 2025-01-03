@@ -19,13 +19,12 @@ import { DEFAULT_PROFILE_URL } from "@/types/pinata.types";
 import { Bell } from "lucide-react";
 import Sidebar from "./Sidebar";
 
-type Address = `0x${string}`;
-
 interface NavbarProps {
-  onToggleSidebar: () => void;
   isAccountCreated: boolean;
+  address: string;
   isConnected: boolean;
-  address: `0x${string}`;
+  onToggleSidebar: () => void;
+  NotificationBell: React.FC;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
@@ -35,8 +34,6 @@ const Navbar: React.FC<NavbarProps> = ({
   onToggleSidebar,
 }) => {
   const router = useRouter();
-  // const { isAccountCreated } = useUser();
-  // const { address, isConnected } = useAccount();
   const { isLoading, data: profile, error } = useProfileData(address);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
