@@ -8,6 +8,8 @@ import "./utils/structs/Message.sol";
 import "./utils/structs/ConversationInfo.sol";
 import "./utils/enum/InteractionStatus.sol";
 import "./utils/enum/FilterCriteria.sol";
+import "./utils/enum/Gender.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Pulse
@@ -185,36 +187,80 @@ contract Pulse is Ownable {
   // ************************ GETTERS FUNCTIONS *********************//
 
   // Fonction de récupération des utilisateurs avec filtres
+  // function getBatchOfUsers(
+  //   uint256 batchSize,
+  //   uint256 startIndex,
+  //   FilterCriteria memory criteria
+  // ) external view returns (SBTMetaData[] memory batch, uint256 count) {
+  //   require(startIndex < userCount, "Invalid start");
+
+  //   batch = new SBTMetaData[](batchSize);
+
+  //   for (uint256 i = startIndex; count < batchSize && i < userCount; i++) {
+  //     address userAddress = userIndexToAddress[i];
+  //     SBTMetaData memory user = pulseSBT.getSBTMetaDataByUser(userAddress);
+  //     if (isValidUserWithCriteria(userAddress, user, criteria)) {
+  //       batch[count] = user;
+  //       unchecked {
+  //         ++count;
+  //       }
+  //     }
+  //   }
+  // }
   function getBatchOfUsers(
     uint256 batchSize,
     uint256 startIndex,
-    FilterCriteria memory criteria
+    FilterCriteria memory criteria,
+    address caller // Ajout du paramètre
   ) external view returns (SBTMetaData[] memory batch, uint256 count) {
     require(startIndex < userCount, "Invalid start");
 
-    batch = new SBTMetaData[](batchSize);
-
-    for (uint256 i = startIndex; count < batchSize && i < userCount; i++) {
+    // Pré-compte pour déterminer la taille du tableau
+    uint256 validUsersCount = 0;
+    for (uint256 i = startIndex; i < userCount && validUsersCount < batchSize; i++) {
       address userAddress = userIndexToAddress[i];
       SBTMetaData memory user = pulseSBT.getSBTMetaDataByUser(userAddress);
-      if (isValidUserWithCriteria(userAddress, user, criteria)) {
+      if (isValidUserWithCriteria(userAddress, user, criteria, caller)) {
+        validUsersCount++;
+      }
+    }
+
+    // Création du tableau avec la taille exacte
+    batch = new SBTMetaData[](validUsersCount);
+    count = 0;
+
+    // Remplissage du tableau
+    for (uint256 i = startIndex; count < validUsersCount && i < userCount; i++) {
+      address userAddress = userIndexToAddress[i];
+      SBTMetaData memory user = pulseSBT.getSBTMetaDataByUser(userAddress);
+      if (isValidUserWithCriteria(userAddress, user, criteria, caller)) {
         batch[count] = user;
         unchecked {
           ++count;
         }
       }
     }
+
+    return (batch, count);
   }
 
   function isValidUserWithCriteria(
     address userAddress,
     SBTMetaData memory user,
-    FilterCriteria memory criteria
+    FilterCriteria memory criteria,
+    address caller
   ) internal view returns (bool) {
+    console.log(
+      "Check interaction: sender=%s, user=%s, status=%s",
+      caller,
+      userAddress,
+      uint(hasInteracted[caller][userAddress])
+    );
+
     if (
       !user.isActive ||
-      userAddress == msg.sender ||
-      hasInteracted[msg.sender][userAddress] != InteractionStatus.NONE
+      userAddress == caller ||
+      hasInteracted[caller][userAddress] != InteractionStatus.NONE
     ) {
       return false;
     }

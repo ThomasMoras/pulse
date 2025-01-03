@@ -400,7 +400,9 @@ describe('Pulse', function () {
         gender: 4, // Undisclosed
       };
 
-      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      const [users, count] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(10, 0, criteria, user1.address);
       const validUsers = users.slice(0, Number(count));
       expect(validUsers.length).to.be.greaterThan(0);
 
@@ -418,7 +420,9 @@ describe('Pulse', function () {
         gender: 1, // Female
       };
 
-      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      const [users, count] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(10, 0, criteria, user1.address);
       const validUsers = users.slice(0, Number(count));
       expect(count).to.be.equal(2);
 
@@ -434,7 +438,9 @@ describe('Pulse', function () {
         gender: 1, // Female
       };
 
-      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      const [users, count] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(10, 0, criteria, user1.address);
       const validUsers = users.slice(0, Number(count));
 
       for (const user of validUsers) {
@@ -449,7 +455,9 @@ describe('Pulse', function () {
         gender: 0,
       };
 
-      const [users, count] = await pulseContract.getBatchOfUsers(10, 0, criteria);
+      const [users, count] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(10, 0, criteria, user1.address);
       expect(count).to.equal(0);
     });
 
@@ -460,8 +468,12 @@ describe('Pulse', function () {
         gender: 4, // Undisclosed
       };
 
-      const [batch1, count1] = await pulseContract.getBatchOfUsers(2, 0, criteria);
-      const [batch2, count2] = await pulseContract.getBatchOfUsers(2, 2, criteria);
+      const [batch1, count1] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(2, 0, criteria, user1.address);
+      const [batch2, count2] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(2, 2, criteria, user1.address);
 
       const validBatch1 = batch1.slice(0, Number(count1));
       const validBatch2 = batch2.slice(0, Number(count2));
@@ -476,9 +488,9 @@ describe('Pulse', function () {
         gender: 4,
       };
 
-      await expect(pulseContract.getBatchOfUsers(10, 999999, criteria)).to.be.revertedWith(
-        'Invalid start'
-      );
+      await expect(
+        pulseContract.connect(user1).getBatchOfUsers(10, 999999, criteria, user1.address)
+      ).to.be.revertedWith('Invalid start');
     });
 
     it('Should batch of user without interacted users', async () => {
@@ -488,12 +500,16 @@ describe('Pulse', function () {
         gender: 4,
       };
 
-      let [users, count] = await pulseContract.connect(user1).getBatchOfUsers(10, 0, criteria);
+      let [users, count] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(10, 0, criteria, user1.address);
       let validUsers = users.slice(0, Number(count));
       expect(validUsers.length).to.equal(3);
 
       await pulseContract.connect(user1).like(user2.address);
-      [users, count] = await pulseContract.connect(user1).getBatchOfUsers(10, 0, criteria);
+      [users, count] = await pulseContract
+        .connect(user1)
+        .getBatchOfUsers(10, 0, criteria, user1.address);
       validUsers = users.slice(0, Number(count));
       expect(validUsers.length).to.equal(2);
     });
