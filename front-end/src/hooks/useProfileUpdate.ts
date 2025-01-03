@@ -27,7 +27,6 @@ export function useProfileUpdate() {
           interestedBy: formData.interestedBy,
           issuedAt: Date.now(),
         };
-        console.log(updatedData);
 
         const contractData = {
           firstName: updatedData.firstName,

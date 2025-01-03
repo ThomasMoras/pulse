@@ -27,7 +27,6 @@ import { EnumSelect } from "../ui/custom/enum-select";
 import { formatBirthDate } from "@/utils/date.utils";
 import { usePinata } from "@/hooks/usePinata";
 import { Textarea } from "../ui/textarea";
-import Link from "next/link";
 
 export function EditProfile() {
   const router = useRouter();
@@ -96,18 +95,13 @@ export function EditProfile() {
                   .filter((hash) => hash !== "");
 
                 const newFiles = formData.images.filter((file) => file instanceof File);
-                console.log(ipfsHashes);
-                console.log(newFiles);
-
                 const obj = { address: `0x${address}`, type: "profile_images" };
                 const stringValue = JSON.stringify(obj);
                 const results = await uploadFiles(newFiles as File[], stringValue);
-                console.log(results);
                 updatedFormData.images = [
                   ...ipfsHashes,
                   ...results.map((result) => result.ipfsHash),
                 ];
-                console.log(updatedFormData);
                 // Mettre à jour le formulaire avec les URLs des images
               } catch (error) {
                 console.error("Upload failed:", error);

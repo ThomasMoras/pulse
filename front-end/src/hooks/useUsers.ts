@@ -35,6 +35,7 @@ export function useUsers({ filters }: UseUsersParams) {
   useEffect(() => {
     if (!rawBatch) return;
 
+    console.log(rawBatch);
     try {
       const [newUsers, count] = rawBatch as [any[], bigint];
       const cleanUsers = newUsers.filter(

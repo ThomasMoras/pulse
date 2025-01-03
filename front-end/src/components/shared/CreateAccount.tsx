@@ -58,22 +58,21 @@ export function CreateAccount() {
         <form
           onSubmit={form.handleSubmit(async (formData) => {
             if (!address) return;
-            const updatedFormData = { ...formData };
-            if (formData.images?.length) {
-              try {
+
+            try {
+              const updatedFormData = { ...formData };
+
+              if (formData.images?.length) {
                 const obj = { address: `0x${address}`, type: "profile_images" };
                 const stringValue = JSON.stringify(obj);
                 const results = await uploadFiles(formData.images as File[], stringValue);
-                console.log(results);
                 updatedFormData.images = results.map((result) => result.ipfsHash);
-                console.log(updatedFormData);
-              } catch (error) {
-                console.error("Upload failed:", error);
-                // Gérer l'erreur
               }
+
+              await createProfile(address, updatedFormData, profile);
+            } catch (error) {
+              console.error("Erreur lors de la création du profil:", error);
             }
-            console.log("before createProfile");
-            await createProfile(address, updatedFormData, profile);
           })}
           className="space-y-6"
         >

@@ -12,7 +12,6 @@ export const usePinata = () => {
     type: string = "gallery_image"
   ): Promise<UploadResult[]> => {
     try {
-      console.log("Starting client upload process");
       const formData = new FormData();
 
       files.forEach((file) => {
@@ -30,7 +29,6 @@ export const usePinata = () => {
       };
       formData.append("metadata", JSON.stringify(metadata));
 
-      console.log("Sending request to server");
       const response = await fetch("/api/pinata", {
         method: "POST",
         body: formData,

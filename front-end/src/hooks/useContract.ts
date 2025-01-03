@@ -1,46 +1,56 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useContract } from "@/hooks/useContract";
-
 import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
 
-export function useContract(successCallback: () => void) {
+export function useContract(onSuccess?: () => void) {
   const { toast } = useToast();
   const { isConnected } = useAccount();
-  const {
-    data: writeContractHash,
-    status: writeContractStatus,
-    writeContract,
-  } = useWriteContract();
-  const { status: transactionStatus } = useWaitForTransactionReceipt({
-    hash: writeContractHash,
+  const hasCalledSuccess = useRef(false);
+
+  const { data: hash, error, isPending: isWritePending, writeContract } = useWriteContract();
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
+    hash,
   });
 
   useEffect(() => {
-    if (writeContractStatus === "error" || transactionStatus === "error") {
-      toast({
-        title: "Error",
-        description: "Transaction failed.",
-      });
-    } else if (writeContractStatus === "success" && transactionStatus === "pending") {
-      toast({
-        title: "Information",
-        description: "Transaction is beeing processed.",
-      });
-    } else if (transactionStatus === "success") {
+    if (isSuccess && !hasCalledSuccess.current) {
+      hasCalledSuccess.current = true;
+      if (onSuccess) {
+        onSuccess();
+      }
       toast({
         title: "Congratulations",
         description: "Transaction has succeeded!",
       });
-      successCallback();
     }
-  }, [transactionStatus, writeContractStatus]);
+
+    // Reset le flag quand une nouvelle transaction commence
+    if (isWritePending) {
+      hasCalledSuccess.current = false;
+    }
+  }, [isSuccess, onSuccess, toast, isWritePending]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Transaction failed.",
+      });
+    }
+    if (hash && isConfirming) {
+      toast({
+        title: "Information",
+        description: "Transaction is being processed.",
+      });
+    }
+  }, [error, hash, isConfirming, toast]);
 
   return {
-    isConnected: isConnected,
-    isPending: transactionStatus === "pending" && !["idle", "error"].includes(writeContractStatus),
+    isConnected,
+    isPending: isWritePending || isConfirming,
     writeContract,
   };
 }

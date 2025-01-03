@@ -329,6 +329,11 @@ export const pulseContract = {
         {
           "components": [
             {
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address",
+            },
+            {
               "internalType": "string",
               "name": "firstName",
               "type": "string",
@@ -449,6 +454,11 @@ export const pulseContract = {
         {
           "components": [
             {
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address",
+            },
+            {
               "internalType": "string",
               "name": "firstName",
               "type": "string",
@@ -561,6 +571,11 @@ export const pulseContract = {
       "outputs": [
         {
           "components": [
+            {
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address",
+            },
             {
               "internalType": "string",
               "name": "firstName",
@@ -1026,6 +1041,11 @@ export const pulseContract = {
         },
         {
           "components": [
+            {
+              "internalType": "address",
+              "name": "userAddress",
+              "type": "address",
+            },
             {
               "internalType": "string",
               "name": "firstName",

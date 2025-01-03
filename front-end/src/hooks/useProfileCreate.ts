@@ -8,20 +8,22 @@ import { useUser } from "@/contexts/user-context";
 
 export function useProfileCreate() {
   const { setIsAccountCreated } = useUser();
-
   const router = useRouter();
 
-  const { writeContract } = useContract(() => {
-    // Callback exécuté après la signature et la confirmation de la transaction
+  // Créer un callback stable avec useCallback
+  const onSuccess = useCallback(() => {
     setIsAccountCreated(true);
     router.push("/");
-  });
+  }, [setIsAccountCreated, router]);
+
+  const { writeContract } = useContract(onSuccess);
 
   const createProfile = useCallback(
     async (address: string, formData: ProfilData, currentProfile: SBTMetaData) => {
       try {
         const updatedData = {
           ...currentProfile,
+          userAddress: address,
           firstName: formData.firstName,
           description: formData.description,
           email: formData.email,
@@ -33,9 +35,9 @@ export function useProfileCreate() {
           issuedAt: Date.now(),
           isActive: true,
         };
-        console.log(address);
-        console.log(updatedData);
+
         const contractData = {
+          userAddress: updatedData.userAddress,
           firstName: updatedData.firstName,
           description: updatedData.description,
           email: updatedData.email,
@@ -50,8 +52,10 @@ export function useProfileCreate() {
           issuer: updatedData.issuer as `0x${string}`,
           isActive: updatedData.isActive,
         };
-        await writeContract({
-          ...pulseContract,
+
+        writeContract({
+          address: pulseContract.address,
+          abi: pulseContract.abi,
           functionName: "createAccount",
           args: [address, contractData],
         });

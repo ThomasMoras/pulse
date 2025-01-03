@@ -25,4 +25,11 @@ export interface SBTMetaData {
   isActive: boolean;
 }
 
+export enum InteractionStatus {
+  NONE,
+  LIKED,
+  DISLIKED,
+  SUPER_LIKED,
+}
+
 export type ProfilData = z.infer<typeof profilSchema>;

@@ -2,7 +2,6 @@
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useAccount } from "wagmi";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +12,6 @@ import {
 } from "../ui/dropdown-menu";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useUser } from "@/contexts/user-context";
 import { ModeToggle } from "./ToogleTheme";
 import { useProfileData } from "@/hooks/useProfileData";
 import { useRouter } from "next/navigation";
@@ -21,21 +19,29 @@ import { DEFAULT_PROFILE_URL } from "@/types/pinata.types";
 import { Bell } from "lucide-react";
 import Sidebar from "./Sidebar";
 
+type Address = `0x${string}`;
+
 interface NavbarProps {
   onToggleSidebar: () => void;
+  isAccountCreated: boolean;
+  isConnected: boolean;
+  address: `0x${string}`;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
+const Navbar: React.FC<NavbarProps> = ({
+  isAccountCreated,
+  isConnected,
+  address,
+  onToggleSidebar,
+}) => {
   const router = useRouter();
-  const { isAccountCreated } = useUser();
-  const { address, isConnected } = useAccount();
+  // const { isAccountCreated } = useUser();
+  // const { address, isConnected } = useAccount();
   const { isLoading, data: profile, error } = useProfileData(address);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  useEffect(() => {
-    console.log("profile navbar : ", profile);
-  }, [profile]);
+  useEffect(() => {}, [profile]);
   if (error) {
     return <div className="text-center p-4 text-red-500">Erreur lors du chargement du profil</div>;
   }
@@ -97,7 +103,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                       Mon profil
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSidebarClick}>Mes crushs</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSidebarClick}>Mes matches</DropdownMenuItem>
                   <DropdownMenuItem>Mes avantages</DropdownMenuItem>
                   <DropdownMenuItem>
                     <Link onClick={handleAvatarClick} href={"/admin"}>
