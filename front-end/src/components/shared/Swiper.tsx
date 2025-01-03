@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Heart, ThumbsDown, Star } from "lucide-react";
@@ -11,6 +11,7 @@ import { useSwipeLogic } from "@/hooks/useSwipeLogic";
 import { cardVariants } from "@/utils/animation";
 import { ActionButton } from "../utils/ActionButton";
 import { UserProfile } from "../utils/UserProfile";
+import { User } from "@/types/swiper.types";
 
 const LoadingState = () => (
   <div className="w-full max-w-sm mx-auto flex justify-center items-center h-[580px]">
@@ -24,7 +25,21 @@ const EmptyState = () => (
   </div>
 );
 
-const SwiperCard: React.FC = ({ user, isPending, onLike, onDislike, onSuperLike }) => (
+interface SwiperCardProps {
+  user: User;
+  isPending: boolean;
+  onLike: () => void;
+  onDislike: () => void;
+  onSuperLike: () => void;
+}
+
+const SwiperCard: React.FC<SwiperCardProps> = ({
+  user,
+  isPending,
+  onLike,
+  onDislike,
+  onSuperLike,
+}) => (
   <Card className="h-full overflow-hidden">
     <UserProfile user={user} />
     <CardFooter className="flex justify-center gap-6 p-4">
@@ -63,17 +78,26 @@ const Swiper: React.FC = () => {
     []
   );
 
-  const { users, loading, hasMore, loadMore, refetch } = useUsers({ filters });
-  const { interact, isPending } = useInteraction(() => {
-    handleSwipe(1);
+  const { users, loading, hasMore, loadMore, refetch, removeUser } = useUsers({ filters });
+
+  const { interact, isPending } = useInteraction((recipient) => {
+    console.log("Use interaction callback triggered with recipient:", recipient);
+    removeUser(recipient);
   });
+
+  useEffect(() => {
+    if (users) {
+      refetch();
+      console.log(users);
+    }
+  }, [users, refetch]);
 
   const {
     direction,
     currentIndex,
-    dragStart,
+    // dragStart,
     setDragStart,
-    handleSwipe,
+    // handleSwipe,
     handleLike,
     handleDislike,
     handleSuperLike,

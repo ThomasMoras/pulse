@@ -566,6 +566,11 @@ export const pulseContract = {
           "name": "criteria",
           "type": "tuple",
         },
+        {
+          "internalType": "address",
+          "name": "caller",
+          "type": "address",
+        },
       ],
       "name": "getBatchOfUsers",
       "outputs": [

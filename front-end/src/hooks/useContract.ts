@@ -52,5 +52,6 @@ export function useContract(onSuccess?: () => void) {
     isConnected,
     isPending: isWritePending || isConfirming,
     writeContract,
+    transactionHash: hash,
   };
 }

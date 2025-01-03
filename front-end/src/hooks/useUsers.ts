@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { pulseContract } from "@/contracts/pulse.contract";
 import { Gender } from "@/types";
-import { useReadContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
+import { User } from "@/types/swiper.types";
 
 interface UseUsersParams {
   filters: {
@@ -12,12 +13,16 @@ interface UseUsersParams {
 }
 
 export function useUsers({ filters }: UseUsersParams) {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
+  const { address } = useAccount();
   const BATCH_SIZE = 10;
 
+  console.log("🔑 Connected user address:", address);
+
+  // Récupération du batch d'utilisateurs
   const {
     data: rawBatch,
     isError,
@@ -27,58 +32,81 @@ export function useUsers({ filters }: UseUsersParams) {
     address: pulseContract.address,
     abi: pulseContract.abi,
     functionName: "getBatchOfUsers",
-    args: [BigInt(BATCH_SIZE), BigInt(currentPage * BATCH_SIZE), filters],
-    enabled: true,
+    args: [BigInt(BATCH_SIZE), BigInt(currentPage * BATCH_SIZE), filters, address],
+    enabled: !!address,
   });
 
-  // Traitement des données du contrat
+  // Traitement des données
   useEffect(() => {
-    if (!rawBatch) return;
+    if (!rawBatch) {
+      console.log("❌ No raw batch data received");
+      return;
+    }
 
-    console.log(rawBatch);
+    console.log("📦 Raw batch received:", rawBatch);
+
     try {
       const [newUsers, count] = rawBatch as [any[], bigint];
-      const cleanUsers = newUsers.filter(
-        (user) => user.firstName !== "" && user.email !== "" && user.birthday !== 0n
-      );
 
-      setUsers(cleanUsers);
-      setHasMore(cleanUsers.length === BATCH_SIZE);
+      console.log("🔢 Total users in batch:", newUsers.length);
+      console.log("🔢 Batch count:", count);
+
+      // Filtrage de base
+      const validUsers = newUsers.filter((user) => {
+        const isValid = user.firstName !== "" && user.email !== "" && user.birthday !== 0n;
+
+        if (!isValid) {
+          console.log("❌ User filtered out:", {
+            firstName: user.firstName,
+            email: user.email,
+            birthday: user.birthday,
+            reason: "Invalid basic fields",
+          });
+        }
+
+        return isValid;
+      });
+
+      setUsers(validUsers);
+      setHasMore(validUsers.length === BATCH_SIZE);
     } catch (error) {
-      console.error("Error processing users:", error);
+      console.error("❌ Error processing users:", error);
     }
   }, [rawBatch]);
 
-  // Chargement de plus de profils
   const loadMore = useCallback(() => {
     if (isLoading || !hasMore) return;
     setCurrentPage((prev) => prev + 1);
   }, [isLoading, hasMore]);
 
-  // Fonction de refetch
   const refetch = useCallback(async () => {
     setCurrentPage(0);
     try {
       const result = await refetchContract();
+      console.log("🔄 Refetch result:", result);
       return result;
     } catch (error) {
-      console.error("Error refetching:", error);
+      console.error("❌ Error refetching:", error);
       return null;
     }
   }, [refetchContract]);
 
-  // Montage initial
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    if (address) {
+      refetch();
+    }
+  }, [address, refetch]);
 
-  // Reset des filtres
   const resetFilters = useCallback(() => {
     setUsers([]);
     setCurrentPage(0);
     setHasMore(true);
     refetch();
   }, [refetch]);
+
+  const removeUser = useCallback((addressToRemove: string) => {
+    setUsers((currentUsers) => currentUsers.filter((user) => user.userAddress !== addressToRemove));
+  }, []);
 
   return {
     users,
@@ -88,5 +116,6 @@ export function useUsers({ filters }: UseUsersParams) {
     loadMore,
     refetch,
     resetFilters,
+    removeUser,
   };
 }
