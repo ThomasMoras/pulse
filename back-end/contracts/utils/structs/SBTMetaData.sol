@@ -5,6 +5,7 @@ import {Gender} from "../enum/Gender.sol";
 
 // Struct SBT token metadata
 struct SBTMetaData {
+  address userAddress; // probably need to be removed
   string firstName;
   string description;
   string email;

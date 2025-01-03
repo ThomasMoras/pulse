@@ -14,6 +14,7 @@ export enum InteractionStatus {
 }
 
 export interface SBTMetaData {
+  userAddress: string;
   firstName: string;
   description: string;
   email: string;

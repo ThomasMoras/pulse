@@ -65,21 +65,25 @@ describe('Pulse', function () {
 
     const metadata1 = {
       ...user1Data,
+      userAddress: user1.address,
       issuer: pulseAddress,
     };
 
     const metadata2 = {
       ...user2Data,
+      userAddress: user2.address,
       issuer: pulseAddress,
     };
 
     const metadata3 = {
       ...user3Data,
+      userAddress: user3.address,
       issuer: pulseAddress,
     };
 
     const metadata4 = {
       ...user4Data,
+      userAddress: user4.address,
       issuer: pulseAddress,
     };
 
@@ -130,6 +134,7 @@ describe('Pulse', function () {
     it('Should mint for three users and check data', async () => {
       let metadata: SBTMetaData = {
         ...user1Data,
+        userAddress: user1.address,
         issuer: pulseAddress,
       };
       await pulseContract.createAccount(user1.address, metadata);
@@ -137,6 +142,7 @@ describe('Pulse', function () {
 
       metadata = {
         ...user2Data,
+        userAddress: user2.address,
         issuer: pulseAddress,
       };
       await pulseContract.createAccount(user2.address, metadata);
@@ -144,6 +150,7 @@ describe('Pulse', function () {
 
       metadata = {
         ...user3Data,
+        userAddress: user3.address,
         issuer: pulseAddress,
       };
       await pulseContract.createAccount(user3.address, metadata);
@@ -153,6 +160,7 @@ describe('Pulse', function () {
     it('Should revert, only one sbt by user', async () => {
       const metadata: SBTMetaData = {
         ...user1Data,
+        userAddress: user1.address,
         issuer: pulseAddress,
       };
       await pulseContract.createAccount(user1, metadata);
@@ -164,18 +172,22 @@ describe('Pulse', function () {
     it('Should retrieve token metadata for user1', async () => {
       const metadataToCreateProfil: SBTMetaData = {
         ...user1Data,
+        userAddress: user1.address,
         issuer: pulseAddress,
       };
       await pulseContract.createAccount(user1, metadataToCreateProfil);
 
       const metadataGetByAccount = await pulseContract.getAccount(user1.address);
       expect(metadataGetByAccount.firstName).to.equal(user1Data.firstName);
+      expect(metadataGetByAccount.description).to.equal(user1Data.description);
       expect(metadataGetByAccount.birthday).to.equal(user1Data.birthday);
       expect(metadataGetByAccount.gender).to.equal(user1Data.gender);
       expect(metadataGetByAccount.localisation).to.equal(user1Data.localisation);
       expect(metadataGetByAccount.hobbies).to.deep.equal(user1Data.hobbies);
       expect(metadataGetByAccount.interestedBy).to.deep.equal(user1Data.interestedBy);
-      expect(metadataGetByAccount.ipfsHashs).to.deep.equal([]);
+      expect(metadataGetByAccount.ipfsHashs).to.deep.equal([
+        'bafkreiawpxy2ai6m26v5prk5jdbf3acfhsxrmrutvmv6ku4hpmbuhp6hbq',
+      ]);
     });
   });
 
@@ -467,6 +479,23 @@ describe('Pulse', function () {
       await expect(pulseContract.getBatchOfUsers(10, 999999, criteria)).to.be.revertedWith(
         'Invalid start'
       );
+    });
+
+    it('Should batch of user without interacted users', async () => {
+      const criteria = {
+        minAge: 18,
+        maxAge: 99,
+        gender: 4,
+      };
+
+      let [users, count] = await pulseContract.connect(user1).getBatchOfUsers(10, 0, criteria);
+      let validUsers = users.slice(0, Number(count));
+      expect(validUsers.length).to.equal(3);
+
+      await pulseContract.connect(user1).like(user2.address);
+      [users, count] = await pulseContract.connect(user1).getBatchOfUsers(10, 0, criteria);
+      validUsers = users.slice(0, Number(count));
+      expect(validUsers.length).to.equal(2);
     });
   });
 

@@ -10,6 +10,7 @@ export async function createAccounts(pulse: any) {
   await Promise.all(
     signers.map(async (signer, index) => {
       const userData = usersList[index];
+      userData.userAddress = signer.address;
       console.log(`Création du compte pour ${userData.firstName}`);
 
       try {

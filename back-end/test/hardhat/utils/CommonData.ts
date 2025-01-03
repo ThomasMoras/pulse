@@ -1,6 +1,7 @@
 import { Gender } from './Type';
 
 export const user1Data = {
+  userAddress: '',
   firstName: 'FirstName1',
   description: 'Descritpion user1',
   email: 'firstname1@gmail.com',
@@ -17,6 +18,7 @@ export const user1Data = {
 };
 
 export const user2Data = {
+  userAddress: '',
   firstName: 'FirstName2',
   description: 'Descritpion user2',
   email: 'firstname2@gmail.com',
@@ -33,6 +35,7 @@ export const user2Data = {
 };
 
 export const user3Data = {
+  userAddress: '',
   firstName: 'FirstName3',
   description: 'Descritpion user3',
   email: 'firstname3@gmail.com',
@@ -49,6 +52,7 @@ export const user3Data = {
 };
 
 export const user4Data = {
+  userAddress: '',
   firstName: 'FirstName4',
   description: 'Descritpion user4',
   email: 'firstname4@gmail.com',
