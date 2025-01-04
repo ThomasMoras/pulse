@@ -1,5 +1,6 @@
 "use client";
 
+import { DEFAULT_PROFILE_URL } from "@/types/pinata.types";
 import React, { createContext, useContext, useState, useCallback } from "react";
 
 interface Match {
@@ -7,8 +8,8 @@ interface Match {
   conversationId: string;
   partner: {
     address: string;
-    name?: string;
-    avatar?: string;
+    firstName?: string;
+    image?: string;
   };
   timestamp: number;
   isRead: boolean;
@@ -19,6 +20,7 @@ interface MatchContextType {
   addMatch: (matchData: any) => void;
   markAllAsRead: () => void;
   unreadCount: number;
+  updateMatchProfile: (address: string, profileData: any) => void;
 }
 
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
@@ -28,7 +30,6 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
 
   const addMatch = useCallback((matchData: any) => {
     setMatches((prev) => {
-      // Vérifier si le match existe déjà en utilisant conversationId
       const matchExists = prev.some(
         (match) =>
           match.conversationId === matchData.conversationId ||
@@ -37,15 +38,14 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
       );
 
       if (matchExists) {
-        return prev; // Ne pas ajouter de doublon
+        return prev;
       }
 
       const newMatch: Match = {
-        id: `match-${matchData.conversationId}`, // Utiliser conversationId pour l'id
+        id: `match-${matchData.conversationId}`,
         conversationId: matchData.conversationId,
         partner: {
           address: matchData.recipient || matchData.sender,
-          name: matchData.name || undefined,
         },
         timestamp: matchData.timestamp || Date.now(),
         isRead: false,
@@ -55,6 +55,25 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
+  const updateMatchProfile = useCallback((address: string, profileData: any) => {
+    console.log(profileData);
+    setMatches((prev) =>
+      prev.map((match) => {
+        if (match.partner.address.toLowerCase() === address.toLowerCase()) {
+          return {
+            ...match,
+            partner: {
+              ...match.partner,
+              firstName: profileData.firstName,
+              image: DEFAULT_PROFILE_URL.concat(profileData.ipfsHashs?.[0]) || undefined,
+            },
+          };
+        }
+        return match;
+      })
+    );
+  }, []);
+
   const markAllAsRead = useCallback(() => {
     setMatches((prev) => prev.map((match) => ({ ...match, isRead: true })));
   }, []);
@@ -62,7 +81,15 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
   const unreadCount = matches.filter((match) => !match.isRead).length;
 
   return (
-    <MatchContext.Provider value={{ matches, addMatch, markAllAsRead, unreadCount }}>
+    <MatchContext.Provider
+      value={{
+        matches,
+        addMatch,
+        markAllAsRead,
+        unreadCount,
+        updateMatchProfile,
+      }}
+    >
       {children}
     </MatchContext.Provider>
   );
