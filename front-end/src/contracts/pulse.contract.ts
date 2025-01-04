@@ -693,7 +693,7 @@ export const pulseContract = {
         },
         {
           "internalType": "address",
-          "name": "_caller",
+          "name": "caller",
           "type": "address",
         },
       ],

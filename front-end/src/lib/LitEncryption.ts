@@ -10,13 +10,14 @@ export class LitEncryption {
   private litNodeClient: LitNodeClient;
   private chainConfig: (typeof CHAIN_CONFIG)[SupportedChains];
   private isTestnet: boolean;
-  private signatureCache: Map<string, any> = new Map();
+  private static signatureCache: Map<string, { signature: any; timestamp: number }> = new Map();
+  private static SIGNATURE_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
   constructor(chain: SupportedChains, isTestnet: boolean = true) {
     this.chainConfig = CHAIN_CONFIG[chain];
     this.isTestnet = isTestnet;
     this.litNodeClient = new LitNodeClient({
-      litNetwork: LIT_NETWORK.DatilDev, // Pour le testnet
+      litNetwork: LIT_NETWORK.DatilDev,
       debug: false,
     });
   }
@@ -52,11 +53,9 @@ export class LitEncryption {
     let nonce = "";
     const randomValues = new Uint8Array(length);
     crypto.getRandomValues(randomValues);
-
     for (let i = 0; i < length; i++) {
       nonce += charset[randomValues[i] % charset.length];
     }
-
     return nonce;
   }
 
@@ -64,12 +63,13 @@ export class LitEncryption {
     const address = walletClient.account?.address;
     if (!address) throw new Error("No account connected");
 
-    // Vérifier le cache
-    const cacheKey = `${address}-${Date.now() / (1000 * 60)}`; // Cache par minute
-    const cached = this.signatureCache.get(cacheKey);
-    if (cached) {
+    const now = Date.now();
+    const cacheKey = address.toLowerCase();
+
+    const cached = LitEncryption.signatureCache.get(cacheKey);
+    if (cached && now - cached.timestamp < LitEncryption.SIGNATURE_TIMEOUT) {
       console.log("Using cached signature");
-      return cached;
+      return cached.signature;
     }
 
     const currentTime = new Date();
@@ -88,21 +88,76 @@ export class LitEncryption {
       expirationTime: expiration.toISOString(),
       resources: ["lit-protocol://encryption"],
     });
-    console.log(siweMessage);
+
     const messageToSign = siweMessage.prepareMessage();
     const signature = await walletClient.signMessage({
       message: messageToSign,
       account: walletClient.account,
     });
-    // Mise en cache de la signature
-    this.signatureCache.set(cacheKey, signature);
 
-    return {
+    const authSig = {
       sig: signature,
       derivedVia: "web3.eth.personal.sign",
       signedMessage: messageToSign,
       address: address,
     };
+
+    LitEncryption.signatureCache.set(cacheKey, {
+      signature: authSig,
+      timestamp: now,
+    });
+
+    return authSig;
+  }
+
+  async decryptMessages(
+    encryptedMessages: { encryptedData: string; recipientAddress: string }[],
+    signer: ethers.Signer
+  ): Promise<string[]> {
+    const authSig = await this.getAuthSig(signer);
+    const chainInfo = this.getChainInfo();
+
+    const decryptedMessages = await Promise.all(
+      encryptedMessages.map(async ({ encryptedData, recipientAddress }) => {
+        try {
+          const { ciphertext, dataToEncryptHash } = JSON.parse(encryptedData);
+          const accessControlConditions = this.getAccessControlConditions(recipientAddress);
+
+          return await decryptToString(
+            {
+              accessControlConditions,
+              ciphertext,
+              dataToEncryptHash,
+              chain: chainInfo.name,
+              authSig,
+            },
+            this.litNodeClient
+          );
+        } catch (error) {
+          console.error("Error decrypting message:", error);
+          return "";
+        }
+      })
+    );
+
+    return decryptedMessages;
+  }
+
+  async decryptMessage(
+    encryptedData: string,
+    recipientAddress: string,
+    signer: ethers.Signer
+  ): Promise<string> {
+    try {
+      const [decryptedMessage] = await this.decryptMessages(
+        [{ encryptedData, recipientAddress }],
+        signer
+      );
+      return decryptedMessage;
+    } catch (error) {
+      console.error("Error in decryptMessage:", error);
+      return "";
+    }
   }
 
   async encryptMessage(
@@ -114,11 +169,9 @@ export class LitEncryption {
 
     try {
       const accessControlConditions = this.getAccessControlConditions(recipientAddress);
-      console.log(accessControlConditions);
       const authSig = await this.getAuthSig(signer);
-      console.log(authSig);
       const chainInfo = this.getChainInfo();
-      console.log(chainInfo);
+
       const { ciphertext, dataToEncryptHash } = await encryptString(
         {
           accessControlConditions,
@@ -128,40 +181,14 @@ export class LitEncryption {
         },
         this.litNodeClient
       );
-      console.log(dataToEncryptHash);
 
       return JSON.stringify({
         ciphertext,
         dataToEncryptHash,
       });
     } catch (error) {
-      console.log(error);
+      console.error("Error encrypting message:", error);
+      return "";
     }
-    return "";
-  }
-
-  async decryptMessage(
-    encryptedData: string,
-    recipientAddress: string,
-    signer: ethers.Signer
-  ): Promise<string> {
-    const { ciphertext, dataToEncryptHash } = JSON.parse(encryptedData);
-    const chainInfo = this.getChainInfo();
-
-    const accessControlConditions = this.getAccessControlConditions(recipientAddress);
-    const authSig = await this.getAuthSig(signer);
-
-    const decryptedMessage = await decryptToString(
-      {
-        accessControlConditions,
-        ciphertext,
-        dataToEncryptHash,
-        chain: chainInfo.name,
-        authSig,
-      },
-      this.litNodeClient
-    );
-
-    return decryptedMessage;
   }
 }

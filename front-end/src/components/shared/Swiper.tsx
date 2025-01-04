@@ -89,21 +89,17 @@ const Swiper: React.FC = () => {
   const { users, loading, hasMore, loadMore, refetch, removeUser } = useUsers({ filters });
 
   const { interact, isPending, logMatchData } = useInteraction((recipient) => {
-    console.log("Interaction callback with recipient:", recipient);
     removeUser(recipient);
   });
 
   useEffect(() => {
-    console.log("Current logMatchData:", logMatchData);
     if (logMatchData) {
-      console.log("Match data updated:", logMatchData);
       addMatch(logMatchData);
     }
   }, [logMatchData, addMatch]);
 
   useEffect(() => {
     if (profile) {
-      console.log("profile : ", profile);
       if (profile.interestedBy.length > 0) filters.gender = profile.interestedBy[0];
     }
   }, [filters, profile]);

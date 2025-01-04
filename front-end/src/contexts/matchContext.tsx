@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { DEFAULT_PROFILE_URL } from "@/types/pinata.types";
 
-// Types pour la gestion des matches
+// Types for match management
 interface MatchPartner {
   address: string;
   firstName?: string;
@@ -26,48 +26,49 @@ interface MatchContextType {
   updateMatchProfile: (address: string, profileData: any) => void;
 }
 
-// Clé de stockage pour le localStorage
+// Storage key for localStorage
 const MATCHES_STORAGE_KEY = "pulseMatches";
 
-// Création du contexte
+// Create context with undefined default value
 const MatchContext = createContext<MatchContextType | undefined>(undefined);
 
-// Fonction utilitaire pour charger les matches depuis le localStorage
+// Utility function to load matches from localStorage with proper error handling
 const loadStoredMatches = (): Match[] => {
   if (typeof window === "undefined") return [];
 
   try {
     const stored = localStorage.getItem(MATCHES_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const parsedMatches = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsedMatches) ? parsedMatches : [];
   } catch (error) {
     console.error("Error loading stored matches:", error);
     return [];
   }
 };
 
-// Provider du contexte
+// Context Provider component
 export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
-  // Initialisation de l'état avec les données du localStorage
-  const [matches, setMatches] = useState<Match[]>(() => loadStoredMatches());
+  // Initialize state with stored matches or empty array
+  const [matches, setMatches] = useState<Match[]>(() => {
+    const loadedMatches = loadStoredMatches();
+    return Array.isArray(loadedMatches) ? loadedMatches : [];
+  });
 
-  // Sauvegarde dans le localStorage à chaque changement
+  // Save to localStorage on matches change
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(MATCHES_STORAGE_KEY, JSON.stringify(matches));
-        console.log("Matches saved to localStorage:", matches);
       } catch (error) {
         console.error("Error saving matches to localStorage:", error);
       }
     }
   }, [matches]);
 
-  // Ajouter un nouveau match
+  // Add new match with duplicate checking
   const addMatch = useCallback((matchData: any) => {
-    console.log("Adding match to context:", matchData);
-
     setMatches((prev) => {
-      // Vérification de l'existence du match
+      // Check for existing match
       const matchExists = prev.some(
         (match) =>
           match.conversationId === matchData.conversationId ||
@@ -76,11 +77,10 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
       );
 
       if (matchExists) {
-        console.log("Match already exists, skipping");
         return prev;
       }
 
-      // Création du nouveau match
+      // Create new match
       const newMatch: Match = {
         id: `match-${matchData.conversationId}`,
         conversationId: matchData.conversationId,
@@ -91,49 +91,47 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
         isRead: false,
       };
 
-      console.log("Created new match:", newMatch);
       return [newMatch, ...prev];
     });
   }, []);
 
-  // Mettre à jour le profil d'un match
+  // Update match profile
   const updateMatchProfile = useCallback((address: string, profileData: any) => {
-    console.log("Updating match profile:", { address, profileData });
+    if (!address || typeof address !== "string") return;
 
     setMatches((prev) =>
       prev.map((match) => {
         if (match.partner.address.toLowerCase() === address.toLowerCase()) {
-          const updatedMatch = {
+          return {
             ...match,
             partner: {
               ...match.partner,
-              firstName: profileData.firstName,
-              image: profileData.ipfsHashs?.[0]
+              firstName: profileData?.firstName,
+              image: profileData?.ipfsHashs?.[0]
                 ? DEFAULT_PROFILE_URL.concat(profileData.ipfsHashs[0])
                 : undefined,
             },
           };
-          console.log("Updated match:", updatedMatch);
-          return updatedMatch;
         }
         return match;
       })
     );
   }, []);
 
-  // Marquer tous les matches comme lus
+  // Mark all matches as read
   const markAllAsRead = useCallback(() => {
-    console.log("Marking all matches as read");
     setMatches((prev) => prev.map((match) => ({ ...match, isRead: true })));
   }, []);
 
-  // Calcul du nombre de matches non lus
-  const unreadCount = matches.filter((match) => !match.isRead).length;
+  // Calculate unread count with type safety
+  const unreadCount = Array.isArray(matches) ? matches.filter((match) => !match.isRead).length : 0;
 
-  // Logging de l'état des matches à chaque changement
+  // Optional: Debug logging
   useEffect(() => {
-    console.log("Current matches state:", matches);
-    console.log("Unread count:", unreadCount);
+    if (process.env.NODE_ENV === "development") {
+      console.debug("Matches updated:", matches);
+      console.debug("Unread count:", unreadCount);
+    }
   }, [matches, unreadCount]);
 
   return (
@@ -151,7 +149,7 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// Hook personnalisé pour utiliser le contexte
+// Custom hook with proper error handling
 export const useMatch = () => {
   const context = useContext(MatchContext);
 

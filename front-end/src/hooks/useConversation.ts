@@ -1,9 +1,8 @@
-import { useCallback, useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useContract } from "./useContract";
 import { pulseContract } from "@/contracts/pulse.contract";
-import { useWatchContractEvent, useAccount, useReadContract } from "wagmi";
+import { useWatchContractEvent, useAccount, useReadContract, useWalletClient } from "wagmi";
 import { useLitEncryption } from "./useLitEncryption";
-import { useWalletClient } from "wagmi";
 
 interface Message {
   sender: string;
@@ -11,33 +10,34 @@ interface Message {
   timestamp: number;
 }
 
-interface DecodedMessage extends Message {
+interface DecodedMessage {
   id: string;
+  sender: string;
   content: string;
+  encryptedContent: string;
+  timestamp: number;
   status: "sent" | "delivered" | "read";
 }
 
 export function useConversation(
   conversationId?: string,
   partnerAddress?: string,
-  onSuccess?: (recipient: string) => void
+  onSuccess?: (success: boolean) => void
 ) {
   const [processedTransactions, setProcessedTransactions] = useState(new Set());
   const [messages, setMessages] = useState<DecodedMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const { address: userAddress } = useAccount();
   const { data: walletClient } = useWalletClient();
   const encryption = useLitEncryption("ethereum");
-  const lastMessagesRef = useRef<Message[]>([]);
 
   const handleContractSuccess = useCallback(() => {
-    // Le callback sera vide car on gère tout via l'événement
+    // Le callback sera vide car on gère tout via les événements
   }, []);
 
-  const { writeContract, isPending, transactionHash } = useContract(handleContractSuccess);
+  const { writeContract, isPending } = useContract(handleContractSuccess);
 
-  // Récupération des messages depuis le contrat
-  const { data: contractMessages, refetch } = useReadContract({
+  const { data: contractMessages } = useReadContract({
     address: pulseContract.address,
     abi: pulseContract.abi,
     functionName: "getConversationMessages",
@@ -45,50 +45,32 @@ export function useConversation(
     enabled: Boolean(conversationId && encryption && walletClient),
   });
 
-  // Fonction pour décoder les messages
   const decodeMessages = useCallback(
     async (rawMessages: Message[]) => {
-      if (!encryption || !walletClient || !userAddress || !partnerAddress) return [];
-
-      console.log("Decoding messages, count:", rawMessages.length);
+      if (!encryption || !walletClient || !userAddress || !partnerAddress) {
+        return [];
+      }
 
       try {
-        const decodedMessages = await Promise.all(
-          rawMessages.map(async (msg) => {
-            let decryptedContent = "";
-            try {
-              const isOwnMessage = msg.sender.toLowerCase() === userAddress.toLowerCase();
-              decryptedContent = await encryption.decryptMessage(
-                msg.encryptedContent,
-                isOwnMessage ? partnerAddress : userAddress,
-                walletClient as any
-              );
-              console.log(decryptedContent);
+        const messagesToDecode = rawMessages.map((msg) => ({
+          encryptedData: msg.encryptedContent,
+          recipientAddress:
+            msg.sender.toLowerCase() === userAddress.toLowerCase() ? partnerAddress : userAddress,
+        }));
 
-              const decodedMessage = {
-                ...msg,
-                id: `${msg.timestamp}-${msg.sender}`,
-                content: decryptedContent,
-                status: "delivered",
-              };
-
-              return decodedMessage;
-            } catch (error) {
-              console.error("Decryption failed:", error, {
-                sender: msg.sender,
-                timestamp: msg.timestamp,
-              });
-              return {
-                ...msg,
-                id: `${msg.timestamp}-${msg.sender}`,
-                content: "Message cannot be decrypted",
-                status: "delivered",
-              };
-            }
-          })
+        const decodedContents = await encryption.decryptMessages(
+          messagesToDecode,
+          walletClient as any
         );
 
-        return decodedMessages;
+        return rawMessages.map((msg, index) => ({
+          id: `${msg.timestamp}-${msg.sender}`,
+          sender: msg.sender,
+          content: decodedContents[index],
+          encryptedContent: msg.encryptedContent,
+          timestamp: Number(msg.timestamp),
+          status: msg.sender.toLowerCase() === userAddress.toLowerCase() ? "sent" : "delivered",
+        }));
       } catch (error) {
         console.error("Error decoding messages:", error);
         return [];
@@ -97,53 +79,21 @@ export function useConversation(
     [encryption, walletClient, userAddress, partnerAddress]
   );
 
-  // useEffect(() => {
-  //   const loadMessages = async () => {
-  //     if (!contractMessages || !Array.isArray(contractMessages)) return;
+  // Effet pour décoder les messages quand ils sont reçus
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!contractMessages || !Array.isArray(contractMessages)) return;
 
-  //     if (
-  //       lastMessagesRef.current.length === contractMessages.length &&
-  //       lastMessagesRef.current.every((msg, i) => msg === contractMessages[i])
-  //     ) {
-  //       // Si les messages n'ont pas changé, ne pas déclencher decodeMessages
-  //       console.log("Messages unchanged, skipping update");
-  //       return;
-  //     }
-  //     lastMessagesRef.current = contractMessages;
+      try {
+        const decodedMessages = await decodeMessages(contractMessages as Message[]);
+        setMessages(decodedMessages);
+      } catch (error) {
+        console.error("Error loading messages:", error);
+      }
+    };
 
-  //     console.log("Loading messages...");
-  //     setIsLoading(true);
-  //     try {
-  //       const decoded = await decodeMessages(contractMessages as Message[]);
-  //       console.log("Decoded messages:", decoded);
-  //       setMessages(decoded);
-  //     } catch (error) {
-  //       console.error("Error loading messages:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   loadMessages();
-  // }, [contractMessages, decodeMessages]);
-
-  // WORKING BUT 2 CALL
-  // useEffect(() => {
-  //   const loadMessages = async () => {
-  //     if (!contractMessages || !Array.isArray(contractMessages)) return;
-  //     setIsLoading(true);
-  //     try {
-  //       const decoded = await decodeMessages(contractMessages as Message[]);
-  //       setMessages(decoded);
-  //     } catch (error) {
-  //       console.error("Error loading messages:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   loadMessages();
-  // }, [contractMessages, decodeMessages]);
+    loadMessages();
+  }, [contractMessages, decodeMessages]);
 
   // Surveillance des nouveaux messages
   useWatchContractEvent({
@@ -152,24 +102,14 @@ export function useConversation(
     eventName: "NewMessage",
     onLogs(logs) {
       logs.forEach((log) => {
-        if (
-          log.transactionHash === transactionHash &&
-          !processedTransactions.has(log.transactionHash)
-        ) {
-          setProcessedTransactions((prevSet) => new Set(prevSet).add(log.transactionHash));
+        if (!processedTransactions.has(log.transactionHash)) {
+          setProcessedTransactions((prev) => new Set([...prev, log.transactionHash]));
 
           try {
-            const sender = log.args.sender;
-            const timestamp = log.args.timestamp;
             const msgConversationId = log.args.conversationId;
 
-            if (msgConversationId === conversationId) {
-              // Rafraîchir les messages
-              refetch();
-            }
-
-            if (onSuccess && msgConversationId) {
-              onSuccess(msgConversationId as string);
+            if (msgConversationId === conversationId && onSuccess) {
+              onSuccess(true);
             }
           } catch (error) {
             console.error("Error processing NewMessage:", error);
@@ -185,55 +125,35 @@ export function useConversation(
         console.error("Missing required dependencies for sending message");
         return;
       }
-      if (!walletClient.account) {
-        console.error("No account connected");
-        return;
-      }
-
-      console.log("💫 Starting sendMessage");
 
       try {
-        // Chiffrer le message
+        setPendingMessage(messageContent);
         const encryptedMessage = await encryption.encryptMessage(
           messageContent,
           partnerAddress,
-          walletClient as any // Cast to ethers.Signer
+          walletClient as any
         );
 
-        console.log(encryptedMessage);
-        // Envoyer le message chiffré
-        writeContract({
+        await writeContract({
           address: pulseContract.address,
           abi: pulseContract.abi,
           functionName: "sendMessage",
           args: [conversationId as `0x${string}`, encryptedMessage],
         });
-
-        // Optimistic update
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `${Date.now()}-${userAddress}`,
-            sender: userAddress || "",
-            content: messageContent,
-            encryptedContent: encryptedMessage,
-            timestamp: Math.floor(Date.now() / 1000),
-            status: "sent",
-          },
-        ]);
       } catch (error) {
         console.error("Failed to send message:", error);
+        setPendingMessage(null);
         throw error;
       }
     },
-    [encryption, walletClient, conversationId, partnerAddress, writeContract, userAddress]
+    [encryption, walletClient, conversationId, partnerAddress, writeContract]
   );
 
   return {
     messages,
+    pendingMessage,
     sendMessage,
     isPending,
-    isLoading,
-    refetchMessages: refetch,
+    decodeMessages,
   };
 }
