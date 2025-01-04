@@ -691,6 +691,11 @@ export const pulseContract = {
           "name": "_conversationId",
           "type": "bytes32",
         },
+        {
+          "internalType": "address",
+          "name": "_caller",
+          "type": "address",
+        },
       ],
       "name": "getConversationMessages",
       "outputs": [

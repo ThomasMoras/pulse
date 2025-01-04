@@ -61,6 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isAccountCreated, isConnected, isOpen
   }, [logMatchData, addMatch]);
 
   const handleChatClick = (match) => {
+    console.log(match);
     setSelectedChat(match);
   };
 

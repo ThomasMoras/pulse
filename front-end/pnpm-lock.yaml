@@ -11,6 +11,12 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.9.1
         version: 3.9.1(react-hook-form@7.54.1(react@19.0.0))
+      '@lit-protocol/constants':
+        specifier: ^7.0.4
+        version: 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/encryption':
+        specifier: ^7.0.4
+        version: 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
       '@pinata/sdk':
         specifier: ^2.1.0
         version: 2.1.0
@@ -65,6 +71,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      ethers:
+        specifier: 5.7.2
+        version: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       form-data:
         specifier: ^4.0.1
         version: 4.0.1
@@ -92,6 +101,9 @@ importers:
       shadcn:
         specifier: ^2.1.6
         version: 2.1.6(typescript@5.7.2)
+      siwe:
+        specifier: ^2.3.2
+        version: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       tailwind-merge:
         specifier: ^2.5.5
         version: 2.5.5
@@ -783,6 +795,9 @@ packages:
   '@lit-protocol/constants@7.0.3':
     resolution: {integrity: sha512-72DkiBff4tLNxqOx+FB3KcreZ2VknmUxG6EJoCFKQcAPa6d/WfLSuGE4IpLtTfkaF8r2Ovn75LeNlODUI6aROA==}
 
+  '@lit-protocol/constants@7.0.4':
+    resolution: {integrity: sha512-yyCqLZ0bXw+kvrNcIHZOMaeL6CqA/oQxEX7cRRRaeEF+jSEnbWw2xi+kMcuD3oIiSSi48eBoADzrokNenFAq6Q==}
+
   '@lit-protocol/contracts-sdk@7.0.3':
     resolution: {integrity: sha512-zOvtugRrSWkKXj80rcpEEWojSjnFw9q6GJvDDPCMA88Dm4TViWdBNz86rKyB+X7eKg3gYT1ZNUpVibshD8Jjlw==}
 
@@ -797,6 +812,9 @@ packages:
   '@lit-protocol/crypto@7.0.3':
     resolution: {integrity: sha512-TvgfjLC69BcASX4J1R7LKGFA100xBKC+pEeR+1MsaeoaE2eKlLTtIOGNlDba69wQ6bI7O9+amAeQlkGVMXjnjg==}
 
+  '@lit-protocol/encryption@7.0.4':
+    resolution: {integrity: sha512-E8JsI/S6kxWo77t4YDaO5G2DYn4lQbvWtZGwrTO3zE4m+u1rNgchu57yzwBCbDWdO34zNLJq+qwk0I+zbByJvg==}
+
   '@lit-protocol/lit-node-client-nodejs@7.0.3':
     resolution: {integrity: sha512-T5tUZbrkSSXcKOhBGA9i11+95TFAyTUb+4bKCOBOze9zSlGjfWHqv5lthR3KfAGNFDlC3ybRalzE3xvXt/M/Zg==}
 
@@ -806,11 +824,17 @@ packages:
   '@lit-protocol/logger@7.0.3':
     resolution: {integrity: sha512-zxAXjEzpuV7kSBQcPFz42oRyoYV1dL/MJqwGOcFERtKvkMksqBToTpSleA8Y+FD9icCTz1z6kmd9LKWzoYUEfQ==}
 
+  '@lit-protocol/logger@7.0.4':
+    resolution: {integrity: sha512-PhCdek4ssUD8LOg1bor/glCOouiUwqDFdiT2rkFaTph7KU8igN1FTdRSeFTqhNlHZk2x9+G+K+kwYbGzbaW+Rg==}
+
   '@lit-protocol/misc-browser@7.0.3':
     resolution: {integrity: sha512-864lN8otLJlLRwT/Bzmo+SBqRtbh9mcYRW4PgYh6qkZhOfmoW4AqdLIjgYq6uMP2j8W947W2QrjCE/Csm8DTwA==}
 
   '@lit-protocol/misc@7.0.3':
     resolution: {integrity: sha512-iTQeHSUgXt2DTTq1TeEbkx2XUWv6vLA1XKOp1uqYPUz/qHEXmZNy3uuby3fESex/InWaIITE6ZoJzLFSwr3TJA==}
+
+  '@lit-protocol/misc@7.0.4':
+    resolution: {integrity: sha512-OprocF89yyipVjVYJYz6JXc08WsYuRs3Mb8J0qdDTWAXziVjQByixmkOsC4sjkGDu+UVmxQI45dwF94Yu6Iuiw==}
 
   '@lit-protocol/nacl@7.0.3':
     resolution: {integrity: sha512-OpwZJJyGBdf+U8z9TnlKOXciuOL327OWw+4yk5ZbXuocTj8U+XgywZi1rEIEHgfmvalHWlOUYrDYWoB20aZa0w==}
@@ -818,8 +842,14 @@ packages:
   '@lit-protocol/types@7.0.3':
     resolution: {integrity: sha512-gIS71fLb1WKnI3Lo65Vz5jmYQvJtpOgD4hn1S9RxK7vdhJlSeeKpV5+j5Vu5iRiEcEWjbIZD0Hu9omfzCo52gw==}
 
+  '@lit-protocol/types@7.0.4':
+    resolution: {integrity: sha512-UKNuWJUCzO7EWw+7iS2rb6kDK8LxHZLyBKEndA+FaU35uK0o+0g7NFJYn1B4xM350bQUHVOUoY7JYgeC2gXlbg==}
+
   '@lit-protocol/uint8arrays@7.0.3':
     resolution: {integrity: sha512-4/fmepj9cP4fnOLHsPHjbdmPT9OZS5yvOmptbkjVZFAm3p/IZ+S4jaQQ9VZpyOCxCYbD/nYARwnjAmswYmj4XQ==}
+
+  '@lit-protocol/uint8arrays@7.0.4':
+    resolution: {integrity: sha512-fB9ktSLArF4c+Sq7Axt8cS8m/OHLfpL0RbjldV+VoyjqsTs4U9lUjqJzbk1RRqjBrCsEfvPhiKpPtOCSA9F4/A==}
 
   '@lit-protocol/wasm@7.0.3':
     resolution: {integrity: sha512-9JkZ9S6NpyesfMy9UDHE7TRsc6YvzhYqI3xSCXpke2ElECW0Ni/TbVQxd5plejUrnnmxdt+e2K2Rb/8CkuecVQ==}
@@ -6245,6 +6275,22 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/constants@7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/contracts': 0.0.74(typescript@5.7.2)
+      '@lit-protocol/types': 7.0.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      depd: 2.0.0
+      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
   '@lit-protocol/contracts-sdk@7.0.3(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abi': 5.7.0
@@ -6332,6 +6378,31 @@ snapshots:
       depd: 2.0.0
       ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       pako: 2.1.0
+      siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+      util: 0.12.5
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/encryption@7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/contracts': 5.7.0
+      '@ethersproject/providers': 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/constants': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.7.2)
+      '@lit-protocol/logger': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/misc': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/types': 7.0.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@lit-protocol/uint8arrays': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      ajv: 8.17.1
+      bech32: 2.0.0
+      depd: 2.0.0
+      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
       tslib: 1.14.1
       util: 0.12.5
@@ -6464,6 +6535,23 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/logger@7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/constants': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.7.2)
+      '@lit-protocol/types': 7.0.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      depd: 2.0.0
+      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
   '@lit-protocol/misc-browser@7.0.3(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abstract-provider': 5.7.0
@@ -6505,11 +6593,46 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  '@lit-protocol/misc@7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@ethersproject/contracts': 5.7.0
+      '@ethersproject/providers': 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/constants': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.7.2)
+      '@lit-protocol/logger': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/types': 7.0.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      ajv: 8.17.1
+      bech32: 2.0.0
+      depd: 2.0.0
+      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+      util: 0.12.5
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
   '@lit-protocol/nacl@7.0.3':
     dependencies:
       tslib: 1.14.1
 
   '@lit-protocol/types@7.0.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@lit-protocol/accs-schemas': 0.0.22
+      depd: 2.0.0
+      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  '@lit-protocol/types@7.0.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)':
     dependencies:
       '@ethersproject/abstract-provider': 5.7.0
       '@lit-protocol/accs-schemas': 0.0.22
@@ -6528,6 +6651,23 @@ snapshots:
       '@lit-protocol/constants': 7.0.3(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
       '@lit-protocol/contracts': 0.0.74(typescript@5.7.2)
       '@lit-protocol/types': 7.0.3(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      '@openagenda/verror': 3.1.4
+      depd: 2.0.0
+      ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)
+      siwe: 2.3.2(ethers@5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10))
+      tslib: 1.14.1
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+
+  '@lit-protocol/uint8arrays@7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@ethersproject/abstract-provider': 5.7.0
+      '@lit-protocol/accs-schemas': 0.0.22
+      '@lit-protocol/constants': 7.0.4(bufferutil@4.0.8)(typescript@5.7.2)(utf-8-validate@5.0.10)
+      '@lit-protocol/contracts': 0.0.74(typescript@5.7.2)
+      '@lit-protocol/types': 7.0.4(bufferutil@4.0.8)(utf-8-validate@5.0.10)
       '@openagenda/verror': 3.1.4
       depd: 2.0.0
       ethers: 5.7.2(bufferutil@4.0.8)(utf-8-validate@5.0.10)

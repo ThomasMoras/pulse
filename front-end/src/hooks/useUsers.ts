@@ -63,7 +63,6 @@ export function useUsers({ filters }: UseUsersParams) {
     setCurrentPage(0);
     try {
       const result = await refetchContract();
-      console.log("🔄 Refetch result:", result);
       return result;
     } catch (error) {
       console.error("❌ Error refetching:", error);

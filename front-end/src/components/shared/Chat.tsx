@@ -1,17 +1,10 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAccount } from "wagmi";
 import { Send } from "lucide-react";
-
-interface Message {
-  id: string;
-  content: string;
-  sender: string;
-  timestamp: number;
-  status: "sent" | "delivered" | "read";
-}
+import { useConversation } from "@/hooks/useConversation";
+import { useAccount } from "wagmi";
 
 interface ChatProps {
   conversationId: string;
@@ -19,118 +12,123 @@ interface ChatProps {
   partnerName?: string;
 }
 
-const ChatMessage = ({ message, isOwnMessage }: { message: Message; isOwnMessage: boolean }) => (
-  <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4`}>
-    <div
-      className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-        isOwnMessage ? "bg-primary text-primary-foreground ml-12" : "bg-muted mr-12"
-      }`}
-    >
-      <p className="text-sm">{message.content}</p>
+const ChatMessage = ({
+  message,
+  isOwnMessage,
+}: {
+  message: {
+    content: string;
+    timestamp: number | bigint; // Ajout du type bigint
+    status: "sent" | "delivered" | "read";
+  };
+  isOwnMessage: boolean;
+}) => {
+  // Conversion du timestamp en nombre
+  const timestamp =
+    typeof message.timestamp === "bigint" ? Number(message.timestamp) : message.timestamp;
+
+  return (
+    <div className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} mb-4`}>
       <div
-        className={`flex items-center gap-1 mt-1 ${isOwnMessage ? "justify-end" : "justify-start"}`}
+        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+          isOwnMessage ? "bg-primary text-primary-foreground ml-12" : "bg-muted mr-12"
+        }`}
       >
-        <span className="text-[10px] text-muted-foreground">
-          {new Date(message.timestamp).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </span>
-        {isOwnMessage && (
+        <p className="text-sm">{message.content}</p>
+        <div
+          className={`flex items-center gap-1 mt-1 ${isOwnMessage ? "justify-end" : "justify-start"}`}
+        >
           <span className="text-[10px] text-muted-foreground">
-            {message.status === "read" ? "✓✓" : message.status === "delivered" ? "✓✓" : "✓"}
+            {new Date(timestamp * 1000).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </span>
-        )}
+          {isOwnMessage && (
+            <span className="text-[10px] text-muted-foreground">
+              {message.status === "read" ? "✓✓" : message.status === "delivered" ? "✓✓" : "✓"}
+            </span>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
-
+  );
+};
 const Chat: React.FC<ChatProps> = ({ conversationId, partnerAddress, partnerName }) => {
   const { address } = useAccount();
-  const [message, setMessage] = React.useState("");
-  const [messages, setMessages] = React.useState<Message[]>([]);
-  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+  const [messageInput, setMessageInput] = useState("");
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Simulation de messages pour l'exemple
-  React.useEffect(() => {
-    setMessages([
-      {
-        id: "1",
-        content: "Salut ! Comment vas-tu ?",
-        sender: partnerAddress,
-        timestamp: Date.now() - 3600000,
-        status: "read",
-      },
-      {
-        id: "2",
-        content: "Hey ! Ça va bien merci, et toi ?",
-        sender: address || "",
-        timestamp: Date.now() - 3500000,
-        status: "read",
-      },
-      {
-        id: "3",
-        content: "Parfait ! On pourrait peut-être se rencontrer un de ces jours ?",
-        sender: partnerAddress,
-        timestamp: Date.now() - 3400000,
-        status: "delivered",
-      },
-    ]);
-  }, [address, partnerAddress]);
+  console.log("Rendering Chat component");
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const { messages, sendMessage, isPending, isLoading } = useConversation(
+    conversationId,
+    partnerAddress
+  );
+
+  console.log("Messages in Chat component:", messages);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!messageInput.trim() || isPending) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: message,
-      sender: address || "",
-      timestamp: Date.now(),
-      status: "sent",
-    };
+    try {
+      await sendMessage(messageInput);
+      setMessageInput("");
 
-    setMessages((prev) => [...prev, newMessage]);
-    setMessage("");
-
-    // Scroll to bottom after sending message
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+      // Scroll to bottom
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollTo({
+          top: scrollAreaRef.current.scrollHeight,
+          behavior: "smooth",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      // Vous pouvez ajouter ici une notification d'erreur pour l'utilisateur
     }
   };
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="px-4 py-3 border-b">
         <h2 className="text-lg font-semibold">
           {partnerName || `${partnerAddress.slice(0, 6)}...${partnerAddress.slice(-4)}`}
         </h2>
       </div>
 
-      {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-        <div className="space-y-4">
-          {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} isOwnMessage={msg.sender === address} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <span className="text-muted-foreground">Loading messages...</span>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex justify-center items-center h-full">
+            <span className="text-muted-foreground">No messages yet</span>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {messages.map((msg) => (
+              <ChatMessage
+                key={msg.id}
+                message={msg}
+                isOwnMessage={msg.sender.toLowerCase() === address?.toLowerCase()}
+              />
+            ))}
+          </div>
+        )}
       </ScrollArea>
 
-      {/* Input */}
       <form onSubmit={handleSendMessage} className="p-4 border-t">
         <div className="flex gap-2">
           <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Écrivez votre message..."
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+            placeholder="Write your message..."
             className="flex-1"
+            disabled={isPending}
           />
-          <Button type="submit" size="icon">
+          <Button type="submit" size="icon" disabled={isPending || !messageInput.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
