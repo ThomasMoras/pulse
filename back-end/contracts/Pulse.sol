@@ -338,11 +338,12 @@ contract Pulse is Ownable {
   }
 
   function getConversationMessages(
-    bytes32 _conversationId
-  ) external view onlyParticipants(_conversationId) returns (Message[] memory) {
+    bytes32 _conversationId,
+    address caller
+  ) external view returns (Message[] memory) {
+    if (!isParticipant(caller, _conversationId)) revert NotAParticipant();
     return conversations[_conversationId];
   }
-
   // ************************ PRIVATE FUNCTIONS *********************//
 
   function _createConversation(address _addr1, address _addr2) private returns (bytes32) {

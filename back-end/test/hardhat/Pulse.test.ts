@@ -345,7 +345,9 @@ describe('Pulse', function () {
       await pulseContract.connect(user2).sendMessage(conversationId, encryptedMessage2);
 
       // Récupération des messages
-      const messages = await pulseContract.connect(user1).getConversationMessages(conversationId);
+      const messages = await pulseContract
+        .connect(user1)
+        .getConversationMessages(conversationId, user1.address);
       expect(messages).to.be.an('array');
       expect(messages.length).to.equal(2);
 

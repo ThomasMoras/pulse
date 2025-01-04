@@ -40,7 +40,7 @@ export const user3Data = {
   description: 'Descritpion user3',
   email: 'firstname3@gmail.com',
   birthday: 1055916000, // 22 years
-  gender: Gender.Undisclosed,
+  gender: Gender.Male,
   interestedBy: [Gender.Male, Gender.Female],
   localisation: 'Toulouse',
   hobbies: ['Drawing', 'Photography'],
