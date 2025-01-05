@@ -15,11 +15,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
   return (
     <div className="relative h-[500px]">
       <Image
-        src={
-          user.ipfsHashs && user.ipfsHashs.length > 0
-            ? DEFAULT_PROFILE_URL.concat(user.ipfsHashs[0])
-            : ""
-        }
+        src={DEFAULT_PROFILE_URL.concat(user.ipfsHashs?.[0] ?? "default-hash")}
         alt={`Photo de ${user.firstName}`}
         fill
         className="object-cover"
