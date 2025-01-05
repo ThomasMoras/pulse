@@ -1,7 +1,6 @@
 {
-  "buildCommand": "cd front-end && pnpm install && pnpm build",
-  "outputDirectory": "front-end/.next",
-  "installCommand": "cd front-end && pnpm install --no-frozen-lockfile",
+  "buildCommand": "pnpm install --no-frozen-lockfile && pnpm build",
+  "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["iad1"]
 }
