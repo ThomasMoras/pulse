@@ -4,28 +4,21 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAccount } from "wagmi";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Button } from "../ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { Input } from "../ui/input";
 import { FancyMultiSelect } from "../utils/FancySelect";
 import { DatePicker } from "../utils/DatePicker";
 import ImageCropUploader from "../utils/ImageCropUploaderProps";
-import { Gender, ProfilData } from "@/types";
+import { Gender, ProfilData } from "../../types";
 import profilSchema from "@/utils/schemas/profil";
 import { DEFAULT_FORM_VALUES, GENDER_OPTIONS } from "@/constants/constants";
-import { useProfileData } from "@/hooks/useProfileData";
-import { useProfileUpdate } from "@/hooks/useProfileUpdate";
+import { useProfileData } from "../../hooks/useProfileData";
+import { useProfileUpdate } from "../../hooks/useProfileUpdate";
 import { useRouter } from "next/navigation";
 import { EnumSelect } from "../ui/custom/enum-select";
-import { formatBirthDate } from "@/utils/date.utils";
-import { usePinata } from "@/hooks/usePinata";
+import { formatBirthDate } from "../../utils/date.utils";
+import { usePinata } from "../../hooks/usePinata";
 import { Textarea } from "../ui/textarea";
 
 export function EditProfile() {
