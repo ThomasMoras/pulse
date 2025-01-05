@@ -2,6 +2,7 @@
 import { HardhatUserConfig } from 'hardhat/config';
 import '@nomicfoundation/hardhat-toolbox';
 import { NETWORK_CONFIGS, NetworkType } from './config/networks';
+import '@primitivefi/hardhat-dodoc';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -15,6 +16,12 @@ const config: HardhatUserConfig = {
         runs: 200,
       },
     },
+  },
+  dodoc: {
+    runOnCompile: true,
+    debugMode: false,
+    outputDir: 'docs',
+    include: ['contracts'],
   },
   networks: {
     hardhat: {

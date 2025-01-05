@@ -107,7 +107,7 @@ contract PulseSBT is ERC721, Ownable {
     }
 
     // ::::::::::::: ERC721 OVERRIDE ::::::::::::: //
-
+    
     function burn(uint256 _tokenId) external {
         require(ownerOf(_tokenId) == msg.sender, "Only token owner can burn");
         require(_tokenId != 0, "Token is not valid");
@@ -127,5 +127,12 @@ contract PulseSBT is ERC721, Ownable {
 
     function approve(address, uint256) public virtual override(ERC721) {
         revert("SoulBound Tokens can not be approved");
+    }
+
+      function setApprovalForAll(
+        address,
+        bool
+    ) public virtual override(ERC721) {
+        revert("SoulBound tokens do not support approvals");
     }
 }
