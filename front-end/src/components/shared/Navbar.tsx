@@ -17,7 +17,6 @@ import { useProfileData } from "@/hooks/useProfileData";
 import { useRouter } from "next/navigation";
 import { DEFAULT_PROFILE_URL } from "@/types/pinata.types";
 import { Bell } from "lucide-react";
-import Sidebar from "./Sidebar";
 
 interface NavbarProps {
   isAccountCreated: boolean;
@@ -34,9 +33,8 @@ const Navbar: React.FC<NavbarProps> = ({
   onToggleSidebar,
 }) => {
   const router = useRouter();
-  const { isLoading, data: profile, error } = useProfileData(address);
+  const { data: profile, error } = useProfileData(address);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {}, [profile]);
   if (error) {

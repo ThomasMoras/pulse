@@ -1,4 +1,3 @@
-// services/pinata.service.ts
 import axios from "axios";
 import { PinataConfig, PinataOptions, PinataResponse } from "../types/pinata.types";
 

@@ -27,7 +27,6 @@ export function useProfileData(address: string | undefined) {
   });
 
   useEffect(() => {
-    //if (!userProfil) return;
     try {
       const typedUserProfil = userProfil as unknown as SBTMetaData;
       setState({

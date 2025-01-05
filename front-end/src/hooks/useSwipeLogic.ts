@@ -1,4 +1,3 @@
-// hooks/useSwipeLogic.ts
 import { useState, useCallback, useEffect } from "react";
 import { InteractionStatus } from "@/types";
 import { ANIMATION_DURATION, SWIPE_THRESHOLD } from "@/types/swiper.types";
