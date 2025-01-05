@@ -126,14 +126,6 @@ export const MatchProvider = ({ children }: { children: React.ReactNode }) => {
   // Calculate unread count with type safety
   const unreadCount = Array.isArray(matches) ? matches.filter((match) => !match.isRead).length : 0;
 
-  // Optional: Debug logging
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.debug("Matches updated:", matches);
-      console.debug("Unread count:", unreadCount);
-    }
-  }, [matches, unreadCount]);
-
   return (
     <MatchContext.Provider
       value={{
