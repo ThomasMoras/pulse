@@ -92,24 +92,52 @@ It also ensures transparency and supports the use of a Soulbound Token (SBT) per
 # Clone the repository
 git clone [repository-url]
 
-# Install dependencies
-npm install
+# Install dependencies with pnpm
+pnpm install
 
 # Set up environment variables
 cp .env.example .env
 
 # Run development server
-npm run dev
+pnpm dev
+
+# Build the application
+pnpm build
+
+# Run linting
+pnpm lint
+
+# Run tests
+pnpm test
+
+# Format code
+pnpm format
+
+# Clean installation
+pnpm clean
+
+# Start production server
+pnpm start
+```
+## Testing 
+
+```bash
+# Run tests
+pnpm hardhat test
+pnpm hardhat coverage
 ```
 
 ## Smart Contract Deployment
 
 ```bash
 # Compile contracts
-npx hardhat compile
+pnpm hardhat compile
 
-# Deploy contracts
-npx hardhat deploy --network [network-name]
+# Deploy contracts local
+ pnpm hard scripts/deploy.ts --network localhost
+
+# Deploy contracts base sepolia
+Base : pnpm hard scripts/deploy.ts --network base-sepolia
 ```
 
 ## Contributing
