@@ -188,13 +188,6 @@ export function CreateAccount() {
             <Button type="submit" className="bg-rose-400 hover:bg-rose-600">
               Création du compte
             </Button>
-            <Button
-              type="button"
-              onClick={() => router.push("/")}
-              className="bg-gray-400 hover:bg-gray-600"
-            >
-              Retour
-            </Button>
           </div>
         </form>
       </Form>
