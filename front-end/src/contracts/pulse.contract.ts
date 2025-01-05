@@ -1,5 +1,6 @@
 export const pulseContract = {
-  address: "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+  // address: "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+  address: "0x648a7025288091320826CeD93F7b49024C933d91",
   fromBlock: BigInt(0),
   abi: [
     {
