@@ -27,6 +27,23 @@ Maximum number of likes per day for users without NFT advantages
 |---|---|---|
 | _0 | uint8 | undefined |
 
+### MAX_CONVERSATIONS_PER_PAGE
+
+```solidity
+function MAX_CONVERSATIONS_PER_PAGE() external view returns (uint256)
+```
+
+Maximum number of conversations that can be displayed per page
+
+
+
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | uint256 | undefined |
+
 ### SUPER_LIKE_PER_DAY
 
 ```solidity
@@ -81,7 +98,7 @@ Allows a user to dislike another user&#39;s profile
 
 | Name | Type | Description |
 |---|---|---|
-| _recipient | address | Address of the user being disliked |
+| _recipient | address | undefined |
 
 ### getAccount
 
@@ -343,13 +360,13 @@ function like(address _recipient) external nonpayable
 
 Allows a user to like another user&#39;s profile
 
-*Creates a match if both users have liked each other*
+
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _recipient | address | Address of the user being liked |
+| _recipient | address | undefined |
 
 ### owner
 
@@ -444,7 +461,7 @@ Allows a user to super like another user&#39;s profile
 
 | Name | Type | Description |
 |---|---|---|
-| _recipient | address | Address of the user being super liked |
+| _recipient | address | undefined |
 
 ### transferOwnership
 
@@ -792,6 +809,17 @@ error OwnableUnauthorizedAccount(address account)
 | Name | Type | Description |
 |---|---|---|
 | account | address | undefined |
+
+### ReentrancyGuardReentrantCall
+
+```solidity
+error ReentrancyGuardReentrantCall()
+```
+
+
+
+*Unauthorized reentrant call.*
+
 
 ### SelfInteractionCheck
 

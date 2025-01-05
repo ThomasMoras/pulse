@@ -1,16 +1,15 @@
-Pulse Contract - Fixed Solhint Issues
-
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
-import { IPulseSBT } from "./interfaces/IPulseSBT.sol";
-import { SBTMetaData } from "./utils/structs/SBTMetaData.sol";
-import { Message } from "./utils/structs/Message.sol";
-import { ConversationInfo } from "./utils/structs/ConversationInfo.sol";
-import { InteractionStatus } from "./utils/enum/InteractionStatus.sol";
-import { FilterCriteria } from "./utils/enum/FilterCriteria.sol";
-import { Gender } from "./utils/enum/Gender.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {IPulseSBT} from "./interfaces/IPulseSBT.sol";
+import {SBTMetaData} from "./utils/structs/SBTMetaData.sol";
+import {Message} from "./utils/structs/Message.sol";
+import {ConversationInfo} from "./utils/structs/ConversationInfo.sol";
+import {InteractionStatus} from "./utils/enum/InteractionStatus.sol";
+import {FilterCriteria} from "./utils/enum/FilterCriteria.sol";
+import {Gender} from "./utils/enum/Gender.sol";
 
 /**
  * @title Pulse
@@ -18,7 +17,7 @@ import { Gender } from "./utils/enum/Gender.sol";
  * @notice This contract implements the core functionality of the Pulse dating application
  * @dev Main contract handling user interactions, matches, and conversations
  */
-contract Pulse is Ownable {
+contract Pulse is Ownable, ReentrancyGuard {
   /**
    * @notice Maximum number of conversations that can be displayed per page
    */
@@ -131,6 +130,14 @@ contract Pulse is Ownable {
   }
 
   /**
+   * @notice Validates if an address is not zero
+   * @param _address Address to validate
+   */
+  modifier validateAddress(address _address) {
+    require(_address != address(0), "Invalid address");
+    _;
+  }
+  /**
    * @notice Ensures interaction is valid and hasn't occurred before
    * @param _recipient Address of the interaction recipient
    */
@@ -151,8 +158,7 @@ contract Pulse is Ownable {
   function createAccount(
     address _recipient,
     SBTMetaData memory _data
-  ) external returns (uint256 tokenId) {
-    require(_recipient != address(0), "Invalid recipient address");
+  ) external nonReentrant validateAddress(_recipient) returns (uint256 tokenId) {
     require(!isRegistred[_recipient], "User already registered");
 
     tokenId = pulseSBT.mintSoulBoundToken(_recipient, _data);
@@ -168,15 +174,12 @@ contract Pulse is Ownable {
 
   /**
    * @notice Updates an existing user account
-   * @param _recipient Address of the user
-   * @param _data Updated metadata for the user's profile
-   * @return tokenId The ID of the updated SBT
    */
   function updateAccount(
     address _recipient,
     SBTMetaData memory _data
-  ) external returns (uint256 tokenId) {
-    uint256 tokenId = pulseSBT.updateTokenMetadata(_recipient, _data);
+  ) external nonReentrant validateAddress(_recipient) returns (uint256 tokenId) {
+    tokenId = pulseSBT.updateTokenMetadata(_recipient, _data);
     emit AccountUpdated(_recipient);
     return tokenId;
   }
@@ -192,11 +195,11 @@ contract Pulse is Ownable {
 
   /**
    * @notice Allows a user to like another user's profile
-   * @param _recipient Address of the user being liked
-   * @dev Creates a match if both users have liked each other
    */
-  function like(address _recipient) external onlyRegistredUsers checkInteraction(_recipient) {
-    require((userLike[msg.sender]) > 0, "You don't have enough likes");
+  function like(
+    address _recipient
+  ) external nonReentrant onlyRegistredUsers checkInteraction(_recipient) {
+    require(userLike[msg.sender] > 0, "You don't have enough likes");
     hasInteracted[msg.sender][_recipient] = InteractionStatus.LIKED;
     emit Interacted(msg.sender, _recipient, InteractionStatus.LIKED);
     --userLike[msg.sender];
@@ -209,7 +212,6 @@ contract Pulse is Ownable {
 
   /**
    * @notice Allows a user to dislike another user's profile
-   * @param _recipient Address of the user being disliked
    */
   function dislike(address _recipient) external onlyRegistredUsers checkInteraction(_recipient) {
     hasInteracted[msg.sender][_recipient] = InteractionStatus.DISLIKED;
@@ -218,9 +220,10 @@ contract Pulse is Ownable {
 
   /**
    * @notice Allows a user to super like another user's profile
-   * @param _recipient Address of the user being super liked
    */
-  function superLike(address _recipient) external onlyRegistredUsers checkInteraction(_recipient) {
+  function superLike(
+    address _recipient
+  ) external nonReentrant onlyRegistredUsers checkInteraction(_recipient) {
     require(userSuperLike[msg.sender] > 0, "You don't have enough super likes");
     hasInteracted[msg.sender][_recipient] = InteractionStatus.SUPER_LIKED;
     emit Interacted(msg.sender, _recipient, InteractionStatus.SUPER_LIKED);
