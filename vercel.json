@@ -1,0 +1,17 @@
+{
+  "outputDirectory": "front-end/.next",
+  "buildCommand": "cd front-end && pnpm install && pnpm build",
+  "installCommand": "cd front-end && pnpm install --no-frozen-lockfile",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "env": {
+    "PNPM_FLAGS": "--shamefully-hoist"
+  },
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./front-end/",
+  "builds": [
+    {
+      "src": "front-end/package.json",
+      "use": "@vercel/next"
+    }
+  ]
+}
