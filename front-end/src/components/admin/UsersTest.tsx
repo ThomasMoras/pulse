@@ -68,7 +68,7 @@ const UserCard: FC<UserCardProps> = ({ user }) => {
   );
 };
 
-export const UserList = () => {
+export const UsersTest = () => {
   const filters = {
     minAge: 1,
     maxAge: 99,
@@ -109,4 +109,4 @@ export const UserList = () => {
   );
 };
 
-export default UserList;
+export default UsersTest;
