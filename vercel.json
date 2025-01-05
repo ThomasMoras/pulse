@@ -1,16 +1,7 @@
 {
-  "outputDirectory": "front-end/.next",
   "buildCommand": "cd front-end && pnpm install && pnpm build",
+  "outputDirectory": "front-end/.next",
   "installCommand": "cd front-end && pnpm install --no-frozen-lockfile",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "PNPM_FLAGS": "--shamefully-hoist"
-  },
-  "builds": [
-    {
-      "src": "front-end/package.json",
-      "use": "@vercel/next"
-    }
-  ]
+  "regions": ["iad1"]
 }
