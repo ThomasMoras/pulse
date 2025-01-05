@@ -1,4 +1,4 @@
-import { Gender, ProfilData } from "@/types";
+import { Gender, ProfilData } from "../types";
 
 export const DEFAULT_FORM_VALUES: ProfilData = {
   firstName: "",
