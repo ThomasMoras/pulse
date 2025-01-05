@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
-import Header from "@/components/shared/Header";
-import Footer from "@/components/shared/Footer";
-import { UserProvider } from "@/contexts/user-context";
-import { MatchProvider } from "@/contexts/matchContext";
+import Header from "../shared/Header";
+import Footer from "../shared/Footer";
+import { UserProvider } from "../../contexts/user-context";
+import { MatchProvider } from "../../contexts/matchContext";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (

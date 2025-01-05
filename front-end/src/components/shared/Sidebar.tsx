@@ -1,17 +1,11 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { ArrowLeftCircleIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMatch } from "@/contexts/matchContext";
+import { useMatch } from "../../contexts/matchContext";
 import { useAccount, useWatchContractEvent } from "wagmi";
-import { pulseContract } from "@/contracts/pulse.contract";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { useInteraction } from "@/hooks/useInteraction";
+import { pulseContract } from "../../contracts/pulse.contract";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
+import { useInteraction } from "../../hooks/useInteraction";
 import { MatchProfile } from "../utils/MatchProfile";
 import Chat from "./Chat";
 

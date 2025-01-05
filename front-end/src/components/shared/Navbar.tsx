@@ -13,9 +13,9 @@ import {
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ModeToggle } from "./ToogleTheme";
-import { useProfileData } from "@/hooks/useProfileData";
+import { useProfileData } from "../../hooks/useProfileData";
 import { useRouter } from "next/navigation";
-import { DEFAULT_PROFILE_URL } from "@/types/pinata.types";
+import { DEFAULT_PROFILE_URL } from "../../types/pinata.types";
 import { Bell } from "lucide-react";
 
 interface NavbarProps {

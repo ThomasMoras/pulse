@@ -3,9 +3,9 @@ import { Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import { useUser } from "@/contexts/user-context";
+import { useUser } from "../../contexts/user-context";
 import { useAccount } from "wagmi";
-import { useMatch } from "@/contexts/matchContext";
+import { useMatch } from "../../contexts/matchContext";
 
 const NotificationBell = ({ onClick }: { onClick: () => void }) => {
   const { unreadCount } = useMatch();

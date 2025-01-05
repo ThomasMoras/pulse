@@ -5,16 +5,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Heart, ThumbsDown, Star } from "lucide-react";
 import { Gender } from "@/types";
-import { useUsers } from "@/hooks/useUsers";
-import { useInteraction } from "@/hooks/useInteraction";
-import { useSwipeLogic } from "@/hooks/useSwipeLogic";
-import { cardVariants } from "@/utils/animation";
+import { useUsers } from "../../hooks/useUsers";
+import { useInteraction } from "../../hooks/useInteraction";
+import { useSwipeLogic } from "../../hooks/useSwipeLogic";
+import { cardVariants } from "../../utils/animation";
 import { ActionButton } from "../utils/ActionButton";
 import { UserProfile } from "../utils/UserProfile";
-import { User } from "@/types/swiper.types";
-import { useProfileData } from "@/hooks/useProfileData";
+import { User } from "../../types/swiper.types";
+import { useProfileData } from "../../hooks/useProfileData";
 import { useAccount } from "wagmi";
-import { useMatch } from "@/contexts/matchContext";
+import { useMatch } from "../../contexts/matchContext";
 
 const LoadingState = () => (
   <div className="w-full max-w-sm mx-auto flex justify-center items-center h-[580px]">
