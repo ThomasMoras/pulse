@@ -419,19 +419,6 @@ export const pulseContract = {
       "inputs": [
         {
           "internalType": "address",
-          "name": "_sender",
-          "type": "address",
-        },
-      ],
-      "name": "createEvent",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "_recipient",
           "type": "address",
         },
@@ -750,19 +737,6 @@ export const pulseContract = {
       "type": "function",
     },
     {
-      "inputs": [],
-      "name": "getLikedProfil",
-      "outputs": [
-        {
-          "internalType": "address[]",
-          "name": "",
-          "type": "address[]",
-        },
-      ],
-      "stateMutability": "nonpayable",
-      "type": "function",
-    },
-    {
       "inputs": [
         {
           "internalType": "address",
@@ -917,19 +891,6 @@ export const pulseContract = {
       "inputs": [
         {
           "internalType": "address",
-          "name": "_sender",
-          "type": "address",
-        },
-      ],
-      "name": "joinEvent",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function",
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "_recipient",
           "type": "address",
         },
@@ -976,19 +937,6 @@ export const pulseContract = {
         },
       ],
       "stateMutability": "view",
-      "type": "function",
-    },
-    {
-      "inputs": [],
-      "name": "removeAccount",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool",
-        },
-      ],
-      "stateMutability": "nonpayable",
       "type": "function",
     },
     {

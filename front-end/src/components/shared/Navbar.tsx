@@ -65,7 +65,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <AvatarImage src="/logo.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        <h1 className="text-2xl font-bold text-gray-800">Lovenect</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Pulse</h1>
         <div className="flex ml-auto">
           <div className="mr-4">
             <ModeToggle />
@@ -101,12 +101,6 @@ const Navbar: React.FC<NavbarProps> = ({
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSidebarClick}>Mes matches</DropdownMenuItem>
-                  <DropdownMenuItem>Mes avantages</DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link onClick={handleAvatarClick} href={"/admin"}>
-                      Admin
-                    </Link>
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -115,8 +109,6 @@ const Navbar: React.FC<NavbarProps> = ({
           <ConnectButton />
         </div>
         <div className="absolute bottom-0 w-full h-px bg-gray-200" />
-
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       </nav>
     </div>
   );
