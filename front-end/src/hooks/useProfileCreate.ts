@@ -52,7 +52,6 @@ export function useProfileCreate() {
           issuer: updatedData.issuer as `0x${string}`,
           isActive: updatedData.isActive,
         };
-
         writeContract({
           address: pulseContract.address,
           abi: pulseContract.abi,
