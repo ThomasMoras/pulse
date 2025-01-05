@@ -1,8 +1,8 @@
 # Pulse
 
 ## Introduction
-On chain socialfy dapp enabling user uniqueness verification (Sybil resistance) and allowing the creation of one account per user (Proof of Personhood).
-It also ensures transparency and supports the use of a Soulbound Token (SBT) per user as well as NFTs providing benefits.
+Pulse is a decentralized dating application similar to Tinder. Pulse aims to enable exchanges between users while preserving their data and ensuring one unique account per user (through Proof of Personhood). 
+Pulse will also allow users to prove their personal information stored in a unique SBT without revealing it using Zero knowledge proof.
 
 ## Technologies Used
 
@@ -134,10 +134,10 @@ pnpm hardhat coverage
 pnpm hardhat compile
 
 # Deploy contracts local
- pnpm hard scripts/deploy.ts --network localhost
+pnpm hard scripts/deploy.ts --network localhost
 
 # Deploy contracts base sepolia
-Base : pnpm hard scripts/deploy.ts --network base-sepolia
+pnpm hard scripts/deploy.ts --network base-sepolia
 ```
 
 ## Contributing
