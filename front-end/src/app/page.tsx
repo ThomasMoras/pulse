@@ -1,5 +1,5 @@
 "use client";
-import Dashboard from "@/components/shared/Dashboard";
+import Dashboard from "../components/shared/Dashboard";
 import NotConnected from "@/components/shared/NotConnected";
 
 import { useAccount } from "wagmi";
