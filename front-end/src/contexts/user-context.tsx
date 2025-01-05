@@ -2,7 +2,6 @@ import { pulseContract } from "@/contracts/pulse.contract";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAccount, useReadContract } from "wagmi";
 
-// Définir le type de données du contexte
 interface UserContextType {
   isAccountCreated: boolean;
   setIsAccountCreated: (value: boolean) => void;

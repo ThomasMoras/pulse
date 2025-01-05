@@ -1,4 +1,3 @@
-// src/config/pinata.config.ts
 import { PinataConfig } from "../types/pinata.types";
 import dotenv from "dotenv";
 
