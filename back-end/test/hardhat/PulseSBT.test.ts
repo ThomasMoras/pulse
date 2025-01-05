@@ -3,8 +3,8 @@ import { ethers, network } from 'hardhat';
 import { expect, assert } from 'chai';
 import { PulseSBT } from '../../typechain-types';
 import { beforeEach } from 'mocha';
-import { user1Data, user2Data, user3Data } from './CommonData';
 import { Gender, SBTMetaData } from './utils/Type';
+import { user1Data, user2Data, user3Data } from './utils/CommonData';
 
 describe('PulseSBT', function () {
   let sbtContract: PulseSBT;

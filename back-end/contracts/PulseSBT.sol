@@ -6,133 +6,205 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import {SBTMetaData} from "./utils/structs/SBTMetaData.sol";
 
 /**
- * @title Pulse SoulBond Token Contract
+ * @title PulseSBT
  * @author Thomas Moras
- * @notice This contract allows users to mint their unique SBT corresponding to their profile.
+ * @notice This contract implements the Soulbound Token functionality for Pulse profiles
+ * @dev Extends ERC721 with non-transferable tokens and profile metadata
  */
 contract PulseSBT is ERC721, Ownable {
-    uint256 private _nextTokenId;
-    address public pulseContractAddress;
+  /**
+   * @notice Next token ID to be minted
+   */
+  uint256 private _nextTokenId;
 
-    mapping(uint256 => SBTMetaData) private _tokenMetadata;
-    mapping(address => SBTMetaData) private _tokenMetadataByUser;
-    mapping(address => uint256) private _tokenIdByUser;
-    mapping(address => bool) private _hasSoulBoundToken;
+  /**
+   * @notice Address of the main Pulse contract
+   */
+  address public pulseContractAddress;
 
-    // Events
-    event TokenMinted(address indexed _recipient, uint256 _tokenId);
-    event SBTMetaDataUpdated(uint256 indexed _tokenId);
-    event TokenBurnt(uint256 indexed _tokenId);
+  // Mappings
+  /** @notice Mapping from token ID to token metadata */
+  mapping(uint256 => SBTMetaData) private _tokenMetadata;
+  /** @notice Mapping from user address to token metadata */
+  mapping(address => SBTMetaData) private _tokenMetadataByUser;
+  /** @notice Mapping from user address to token ID */
+  mapping(address => uint256) private _tokenIdByUser;
+  /** @notice Mapping tracking if an address has a SoulBound token */
+  mapping(address => bool) private _hasSoulBoundToken;
 
-    constructor() ERC721("PulseAccountSBT", "PSBT") Ownable(msg.sender) {}
+  // Events
+  /** @notice Emitted when a new token is minted */
+  event TokenMinted(address indexed _recipient, uint256 _tokenId);
+  /** @notice Emitted when token metadata is updated */
+  event SBTMetaDataUpdated(uint256 indexed _tokenId);
+  /** @notice Emitted when a token is burned */
+  event TokenBurnt(uint256 indexed _tokenId);
 
-    modifier onlyPulseContract() {
-        require(msg.sender == pulseContractAddress, "Only the Pulse contract can call this function");
-        _;
-    }
+  /**
+   * @notice Initializes the PulseSBT contract
+   * @dev Sets up the ERC721 token with name "PulseAccountSBT" and symbol "PSBT"
+   */
+  constructor() ERC721("PulseAccountSBT", "PSBT") Ownable(msg.sender) {}
 
-    // Method to set the address of the Pulse contract
-    function setPulseAddress(address _pulseContractAddress) external onlyOwner {
-        require(_pulseContractAddress != address(0), "Invalid address");
-        pulseContractAddress = _pulseContractAddress;
-    }
+  /**
+   * @notice Ensures the function caller is the Pulse contract
+   */
+  modifier onlyPulseContract() {
+    require(msg.sender == pulseContractAddress, "Only the Pulse contract can call this function");
+    _;
+  }
 
-    function getPulseContractAddress() external view returns (address) {
-        return pulseContractAddress;
-    }
+  /**
+   * @notice Sets the address of the main Pulse contract
+   * @param _pulseContractAddress Address of the Pulse contract
+   * @dev Can only be called by contract owner
+   */
+  function setPulseAddress(address _pulseContractAddress) external onlyOwner {
+    require(_pulseContractAddress != address(0), "Invalid address");
+    pulseContractAddress = _pulseContractAddress;
+  }
 
-    /**
-     * @dev Mint a SoulBound Token to a specific address
-     * @param _recipient The address receiving the token
-     * @param _data The SBT metadata
-     */
-    function mintSoulBoundToken(
-        address _recipient,
-        SBTMetaData memory _data
-    ) external onlyPulseContract returns (uint256) {
-        require(!_hasSoulBoundToken[_recipient], "Address has already received a SoulBound Token");
+  /**
+   * @notice Returns the address of the Pulse contract
+   * @return address The Pulse contract address
+   */
+  function getPulseContractAddress() external view returns (address) {
+    return pulseContractAddress;
+  }
 
-        uint256 tokenId = ++_nextTokenId;
+  /**
+   * @notice Mints a new SoulBound Token
+   * @param _recipient Address receiving the token
+   * @param _data Token metadata
+   * @return uint256 ID of the minted token
+   * @dev Can only be called by the Pulse contract
+   */
+  function mintSoulBoundToken(
+    address _recipient,
+    SBTMetaData memory _data
+  ) external onlyPulseContract returns (uint256) {
+    require(!_hasSoulBoundToken[_recipient], "Address has already received a SoulBound Token");
 
-        _tokenMetadata[tokenId] = _data;
-        _tokenIdByUser[_recipient] = tokenId;
-        _tokenMetadataByUser[_recipient] = _data;
-        _hasSoulBoundToken[_recipient] = true;
+    uint256 tokenId = ++_nextTokenId;
 
-        _safeMint(_recipient, tokenId);
+    _tokenMetadata[tokenId] = _data;
+    _tokenIdByUser[_recipient] = tokenId;
+    _tokenMetadataByUser[_recipient] = _data;
+    _hasSoulBoundToken[_recipient] = true;
 
-        emit TokenMinted(_recipient, tokenId);
-        return tokenId;
-    }
+    _safeMint(_recipient, tokenId);
 
-    function hasSoulBoundToken(address _recipient) external view returns (bool) {
-        return _hasSoulBoundToken[_recipient];
-    }
+    emit TokenMinted(_recipient, tokenId);
+    return tokenId;
+  }
 
-    function getSBTMetaDataByUser(address _recipient) external view onlyPulseContract returns (SBTMetaData memory) {
-        return _tokenMetadataByUser[_recipient];
-    }
+  /**
+   * @notice Checks if an address has a SoulBound Token
+   * @param _recipient Address to check
+   * @return bool True if the address has a token
+   */
+  function hasSoulBoundToken(address _recipient) external view returns (bool) {
+    return _hasSoulBoundToken[_recipient];
+  }
 
-    /**
-     * @dev Update the metadata of a SoulBound Token
-     * @param _recipient The address of the token owner
-     * @param _data The SBT metadata
-     */
-    function updateTokenMetadata(
-        address _recipient,
-        SBTMetaData memory _data
-    ) external onlyPulseContract returns (uint256) {
-        // Ensure the user has a SoulBound Token
-        require(_hasSoulBoundToken[_recipient], "User does not have a SoulBound Token");
+  /**
+   * @notice Gets the metadata for a user's SoulBound Token
+   * @param _recipient Address of the token holder
+   * @return SBTMetaData The token's metadata
+   */
+  function getSBTMetaDataByUser(
+    address _recipient
+  ) external view onlyPulseContract returns (SBTMetaData memory) {
+    return _tokenMetadataByUser[_recipient];
+  }
 
-        // Update token metadata
-        _tokenMetadataByUser[_recipient] = _data;
+  /**
+   * @notice Updates the metadata of a SoulBound Token
+   * @param _recipient Address of the token holder
+   * @param _data New metadata
+   * @return uint256 ID of the updated token
+   */
+  function updateTokenMetadata(
+    address _recipient,
+    SBTMetaData memory _data
+  ) external onlyPulseContract returns (uint256) {
+    require(_hasSoulBoundToken[_recipient], "User does not have a SoulBound Token");
 
-        emit SBTMetaDataUpdated(_tokenIdByUser[_recipient]);
+    _tokenMetadataByUser[_recipient] = _data;
 
-        return _tokenIdByUser[_recipient];
-    }
+    emit SBTMetaDataUpdated(_tokenIdByUser[_recipient]);
 
-    // Method to reconstruct the image URL
-    function getImageUrl(string memory hash) public pure returns (string memory) {
-        return string(abi.encodePacked("ipfs://", hash));
-        // Or alternative
-        // return string(abi.encodePacked("https://ipfs.io/ipfs/", hash));
-    }
+    return _tokenIdByUser[_recipient];
+  }
 
-    function getTokenIdByUser(address user) public view returns (uint256) {
-        uint256 tokenId = _tokenIdByUser[user];
-        require(tokenId != 0, "No token found for this user");
-        return tokenId;
-    }
+  /**
+   * @notice Constructs the IPFS URL for a token's image
+   * @param hash IPFS hash of the image
+   * @return string Complete IPFS URL
+   */
+  function getImageUrl(string memory hash) public pure returns (string memory) {
+    return string(abi.encodePacked("ipfs://", hash));
+  }
 
-    // ::::::::::::: ERC721 OVERRIDE ::::::::::::: //
-    
-    function burn(uint256 _tokenId) external {
-        require(ownerOf(_tokenId) == msg.sender, "Only token owner can burn");
-        require(_tokenId != 0, "Token is not valid");
-        _burn(_tokenId);
-        delete _tokenMetadataByUser[msg.sender];
-        _hasSoulBoundToken[msg.sender] = false;
-        emit TokenBurnt(_tokenId);
-    }
+  /**
+   * @notice Gets the token ID for a user
+   * @param user Address of the token holder
+   * @return uint256 ID of the user's token
+   */
+  function getTokenIdByUser(address user) public view returns (uint256) {
+    uint256 tokenId = _tokenIdByUser[user];
+    require(tokenId != 0, "No token found for this user");
+    return tokenId;
+  }
 
-    function transferFrom(address, address, uint256) public virtual override(ERC721) {
-        revert("SoulBound Tokens are non-transferable");
-    }
+  /**
+   * @notice Burns a SoulBound Token
+   * @param _tokenId ID of the token to burn
+   * @dev Can only be called by the token owner
+   */
+  function burn(uint256 _tokenId) external {
+    require(ownerOf(_tokenId) == msg.sender, "Only token owner can burn");
+    require(_tokenId != 0, "Token is not valid");
+    _burn(_tokenId);
+    delete _tokenMetadataByUser[msg.sender];
+    _hasSoulBoundToken[msg.sender] = false;
+    emit TokenBurnt(_tokenId);
+  }
 
-    function safeTransferFrom(address, address, uint256, bytes memory) public virtual override(ERC721) {
-        revert("SoulBound Tokens are non-transferable");
-    }
+  /**
+   * @notice Disabled - SoulBound Tokens cannot be transferred
+   * @dev Always reverts
+   */
+  function transferFrom(address, address, uint256) public virtual override(ERC721) {
+    revert("SoulBound Tokens are non-transferable");
+  }
 
-    function approve(address, uint256) public virtual override(ERC721) {
-        revert("SoulBound Tokens can not be approved");
-    }
+  /**
+   * @notice Disabled - SoulBound Tokens cannot be transferred
+   * @dev Always reverts
+   */
+  function safeTransferFrom(
+    address,
+    address,
+    uint256,
+    bytes memory
+  ) public virtual override(ERC721) {
+    revert("SoulBound Tokens are non-transferable");
+  }
 
-      function setApprovalForAll(
-        address,
-        bool
-    ) public virtual override(ERC721) {
-        revert("SoulBound tokens do not support approvals");
-    }
+  /**
+   * @notice Disabled - SoulBound Tokens cannot be approved
+   * @dev Always reverts
+   */
+  function approve(address, uint256) public virtual override(ERC721) {
+    revert("SoulBound Tokens can not be approved");
+  }
+
+  /**
+   * @notice Disabled - SoulBound Tokens cannot be approved
+   * @dev Always reverts
+   */
+  function setApprovalForAll(address, bool) public virtual override(ERC721) {
+    revert("SoulBound tokens can not support approvals");
+  }
 }

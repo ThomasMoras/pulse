@@ -1,7 +1,7 @@
 // scripts/deploy.ts
 import { ethers } from 'hardhat';
-import { user1Data, user2Data, user3Data, user4Data } from '../test/hardhat/utils/CommonData';
 import { createAccounts } from './helperUsers';
+const hre = require('hardhat');
 
 async function main() {
   // Récupérer le signataire (déployeur)
@@ -45,6 +45,31 @@ async function main() {
     console.log('All addresses are correctly set!');
   } else {
     console.error("There's a mismatch in the contract addresses!");
+  }
+
+  console.log('hre.network.name : ', hre.network.name);
+
+  // Verify contracts on Arbiscan if not on localhost or hardhat network
+  if (hre.network.name !== 'localhost' && hre.network.name !== 'hardhat') {
+    console.log('Verifying contracts on Arbiscan...');
+
+    try {
+      await hre.run('verify:verify', {
+        address: await pulseSBT.getAddress(),
+        constructorArguments: [],
+      });
+
+      await hre.run('verify:verify', {
+        address: await pulse.getAddress(),
+        constructorArguments: [await pulseSBT.getAddress()],
+      });
+
+      console.log('Contracts verified on Base');
+    } catch (error) {
+      console.error('Error verifying contracts:', error);
+    }
+  } else {
+    console.log('Skipping contract verification on local network');
   }
 
   console.log('Deployment, verification, and initialization complete!');

@@ -2,11 +2,11 @@
 
 *Thomas Moras*
 
-> Pulse SoulBond Token Contract
+> PulseSBT
 
-This contract allows users to mint their unique SBT corresponding to their profile.
+This contract implements the Soulbound Token functionality for Pulse profiles
 
-
+*Extends ERC721 with non-transferable tokens and profile metadata*
 
 ## Methods
 
@@ -16,9 +16,9 @@ This contract allows users to mint their unique SBT corresponding to their profi
 function approve(address, uint256) external nonpayable
 ```
 
+Disabled - SoulBound Tokens cannot be approved
 
-
-
+*Always reverts*
 
 #### Parameters
 
@@ -55,15 +55,15 @@ function balanceOf(address owner) external view returns (uint256)
 function burn(uint256 _tokenId) external nonpayable
 ```
 
+Burns a SoulBound Token
 
-
-
+*Can only be called by the token owner*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _tokenId | uint256 | undefined |
+| _tokenId | uint256 | ID of the token to burn |
 
 ### getApproved
 
@@ -93,7 +93,7 @@ function getApproved(uint256 tokenId) external view returns (address)
 function getImageUrl(string hash) external pure returns (string)
 ```
 
-
+Constructs the IPFS URL for a token&#39;s image
 
 
 
@@ -101,13 +101,13 @@ function getImageUrl(string hash) external pure returns (string)
 
 | Name | Type | Description |
 |---|---|---|
-| hash | string | undefined |
+| hash | string | IPFS hash of the image |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | string | undefined |
+| _0 | string | string Complete IPFS URL |
 
 ### getPulseContractAddress
 
@@ -115,7 +115,7 @@ function getImageUrl(string hash) external pure returns (string)
 function getPulseContractAddress() external view returns (address)
 ```
 
-
+Returns the address of the Pulse contract
 
 
 
@@ -124,7 +124,7 @@ function getPulseContractAddress() external view returns (address)
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | address | undefined |
+| _0 | address | address The Pulse contract address |
 
 ### getSBTMetaDataByUser
 
@@ -132,7 +132,7 @@ function getPulseContractAddress() external view returns (address)
 function getSBTMetaDataByUser(address _recipient) external view returns (struct SBTMetaData)
 ```
 
-
+Gets the metadata for a user&#39;s SoulBound Token
 
 
 
@@ -140,13 +140,13 @@ function getSBTMetaDataByUser(address _recipient) external view returns (struct 
 
 | Name | Type | Description |
 |---|---|---|
-| _recipient | address | undefined |
+| _recipient | address | Address of the token holder |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | SBTMetaData | undefined |
+| _0 | SBTMetaData | SBTMetaData The token&#39;s metadata |
 
 ### getTokenIdByUser
 
@@ -154,7 +154,7 @@ function getSBTMetaDataByUser(address _recipient) external view returns (struct 
 function getTokenIdByUser(address user) external view returns (uint256)
 ```
 
-
+Gets the token ID for a user
 
 
 
@@ -162,13 +162,13 @@ function getTokenIdByUser(address user) external view returns (uint256)
 
 | Name | Type | Description |
 |---|---|---|
-| user | address | undefined |
+| user | address | Address of the token holder |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | uint256 | undefined |
+| _0 | uint256 | uint256 ID of the user&#39;s token |
 
 ### hasSoulBoundToken
 
@@ -176,7 +176,7 @@ function getTokenIdByUser(address user) external view returns (uint256)
 function hasSoulBoundToken(address _recipient) external view returns (bool)
 ```
 
-
+Checks if an address has a SoulBound Token
 
 
 
@@ -184,13 +184,13 @@ function hasSoulBoundToken(address _recipient) external view returns (bool)
 
 | Name | Type | Description |
 |---|---|---|
-| _recipient | address | undefined |
+| _recipient | address | Address to check |
 
 #### Returns
 
 | Name | Type | Description |
 |---|---|---|
-| _0 | bool | undefined |
+| _0 | bool | bool True if the address has a token |
 
 ### isApprovedForAll
 
@@ -300,7 +300,7 @@ function ownerOf(uint256 tokenId) external view returns (address)
 function pulseContractAddress() external view returns (address)
 ```
 
-
+Address of the main Pulse contract
 
 
 
@@ -346,9 +346,9 @@ function safeTransferFrom(address from, address to, uint256 tokenId) external no
 function safeTransferFrom(address, address, uint256, bytes) external nonpayable
 ```
 
+Disabled - SoulBound Tokens cannot be transferred
 
-
-
+*Always reverts*
 
 #### Parameters
 
@@ -365,9 +365,9 @@ function safeTransferFrom(address, address, uint256, bytes) external nonpayable
 function setApprovalForAll(address, bool) external nonpayable
 ```
 
+Disabled - SoulBound Tokens cannot be approved
 
-
-
+*Always reverts*
 
 #### Parameters
 
@@ -382,15 +382,15 @@ function setApprovalForAll(address, bool) external nonpayable
 function setPulseAddress(address _pulseContractAddress) external nonpayable
 ```
 
+Sets the address of the main Pulse contract
 
-
-
+*Can only be called by contract owner*
 
 #### Parameters
 
 | Name | Type | Description |
 |---|---|---|
-| _pulseContractAddress | address | undefined |
+| _pulseContractAddress | address | Address of the Pulse contract |
 
 ### supportsInterface
 
@@ -459,9 +459,9 @@ function tokenURI(uint256 tokenId) external view returns (string)
 function transferFrom(address, address, uint256) external nonpayable
 ```
 
+Disabled - SoulBound Tokens cannot be transferred
 
-
-
+*Always reverts*
 
 #### Parameters
 
@@ -573,7 +573,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 event SBTMetaDataUpdated(uint256 indexed _tokenId)
 ```
 
-
+Emitted when token metadata is updated 
 
 
 
@@ -589,7 +589,7 @@ event SBTMetaDataUpdated(uint256 indexed _tokenId)
 event TokenBurnt(uint256 indexed _tokenId)
 ```
 
-
+Emitted when a token is burned 
 
 
 
@@ -605,7 +605,7 @@ event TokenBurnt(uint256 indexed _tokenId)
 event TokenMinted(address indexed _recipient, uint256 _tokenId)
 ```
 
-
+Emitted when a new token is minted 
 
 
 
