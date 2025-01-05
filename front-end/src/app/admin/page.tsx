@@ -1,5 +1,5 @@
 "use client";
-import UsersTest from "@/components/admin/UsersTest";
+import { UsersTest } from "@/components/admin/UsersTest";
 import React from "react";
 
 const page = () => {
