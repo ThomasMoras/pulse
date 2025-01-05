@@ -11,13 +11,13 @@ import { FancyMultiSelect } from "../utils/FancySelect";
 import { DatePicker } from "../utils/DatePicker";
 import { Gender, ProfilData } from "@/types";
 import { useRouter } from "next/navigation";
-import { DEFAULT_FORM_VALUES, GENDER_OPTIONS } from "@/constants/constants";
-import { useProfileData } from "@/hooks/useProfileData";
+import { useProfileData } from "../../hooks/useProfileData";
 import profilSchema from "@/utils/schemas/profil";
-import { useProfileCreate } from "@/hooks/useProfileCreate";
+import { useProfileCreate } from "../../hooks/useProfileCreate";
 import { EnumSelect } from "../ui/custom/enum-select";
-import { usePinata } from "@/hooks/usePinata";
+import { usePinata } from "../../hooks/usePinata";
 import { Textarea } from "../ui/textarea";
+import { DEFAULT_FORM_VALUES, GENDER_OPTIONS } from "../../constants/constants";
 
 export function CreateAccount() {
   const router = useRouter();
@@ -128,11 +128,6 @@ export function CreateAccount() {
             control={form.control}
             name="gender"
             render={({ field }) => {
-              // console.log("FormField gender rendering:", {
-              //   fieldValue: field.value,
-              //   fieldValueType: typeof field.value,
-              //   formValues: form.getValues(),
-              // });
               return (
                 <FormItem>
                   <FormLabel>Genre</FormLabel>
@@ -180,10 +175,7 @@ export function CreateAccount() {
                     existingImages={profile?.ipfsHashs?.map((hash) => ipfsToHttps(hash)) || []}
                     maxSize={5}
                     onImageCropped={(files) => {
-                      //console.log("Files received from ImageCropUploader:", files);
                       field.onChange(files);
-                      // Pour debugger
-                      console.log("Form values after onChange:", form.getValues());
                     }}
                   />
                 </FormControl>

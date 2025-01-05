@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 
 import { CreateAccount } from "./CreateAccount";
-import { useUser } from "@/contexts/user-context";
-import Swiper from "@/components/shared/Swiper";
+import { useUser } from "../../contexts/user-context";
+import Swiper from "../shared/Swiper";
 
 const Dashboard = () => {
   const { isAccountCreated } = useUser();
