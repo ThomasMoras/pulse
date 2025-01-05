@@ -83,6 +83,28 @@ Allows a user to dislike another user&#39;s profile
 |---|---|---|
 | _recipient | address | Address of the user being disliked |
 
+### getAccount
+
+```solidity
+function getAccount(address _user) external view returns (struct SBTMetaData)
+```
+
+Get all data from a user account
+
+
+
+#### Parameters
+
+| Name | Type | Description |
+|---|---|---|
+| _user | address | Address of the user |
+
+#### Returns
+
+| Name | Type | Description |
+|---|---|---|
+| _0 | SBTMetaData | SBTMetaData Token SBT metadata of user |
+
 ### getBatchOfUsers
 
 ```solidity

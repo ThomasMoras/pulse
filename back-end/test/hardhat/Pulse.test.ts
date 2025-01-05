@@ -165,7 +165,7 @@ describe('Pulse', function () {
       };
       await pulseContract.createAccount(user1, metadata);
       await expect(pulseContract.createAccount(user1, metadata)).to.be.revertedWith(
-        'Address has already received a SoulBound Token'
+        'User already registered'
       );
     });
 
@@ -270,7 +270,7 @@ describe('Pulse', function () {
       }
       const targetUser = (await ethers.getSigners())[12];
       await expect(pulseContract.connect(user1).superLike(targetUser.address)).revertedWith(
-        "You don't have enought super like"
+        "You don't have enough super likes"
       );
     });
 
@@ -492,7 +492,7 @@ describe('Pulse', function () {
 
       await expect(
         pulseContract.connect(user1).getBatchOfUsers(10, 999999, criteria, user1.address)
-      ).to.be.revertedWith('Invalid start');
+      ).to.be.revertedWith('Invalid start index');
     });
 
     it('Should batch of user without interacted users', async () => {
