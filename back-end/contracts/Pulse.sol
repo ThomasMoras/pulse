@@ -1,15 +1,16 @@
+Pulse Contract - Fixed Solhint Issues
+
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./interfaces/IPulseSBT.sol";
-import "./utils/structs/SBTMetaData.sol";
-import "./utils/structs/Message.sol";
-import "./utils/structs/ConversationInfo.sol";
-import "./utils/enum/InteractionStatus.sol";
-import "./utils/enum/FilterCriteria.sol";
-import "./utils/enum/Gender.sol";
-import "hardhat/console.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { IPulseSBT } from "./interfaces/IPulseSBT.sol";
+import { SBTMetaData } from "./utils/structs/SBTMetaData.sol";
+import { Message } from "./utils/structs/Message.sol";
+import { ConversationInfo } from "./utils/structs/ConversationInfo.sol";
+import { InteractionStatus } from "./utils/enum/InteractionStatus.sol";
+import { FilterCriteria } from "./utils/enum/FilterCriteria.sol";
+import { Gender } from "./utils/enum/Gender.sol";
 
 /**
  * @title Pulse
@@ -21,7 +22,7 @@ contract Pulse is Ownable {
   /**
    * @notice Maximum number of conversations that can be displayed per page
    */
-  uint256 constant MAX_CONVERSATIONS_PER_PAGE = 10;
+  uint256 public constant MAX_CONVERSATIONS_PER_PAGE = 10;
 
   /**
    * @notice Maximum number of likes per day for users without NFT advantages
