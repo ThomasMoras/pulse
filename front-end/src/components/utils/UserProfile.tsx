@@ -17,10 +17,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
       <Image
         src={DEFAULT_PROFILE_URL.concat(user.ipfsHashs?.[0] ?? "default-hash")}
         alt={`Photo de ${user.firstName}`}
-        fill
-        className="object-cover"
+        width={500}
+        height={500}
+        className="object-cover w-full h-full"
         priority
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90 p-6 flex flex-col justify-end">
         <h2 className="text-3xl font-bold text-white mb-2">
