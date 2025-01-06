@@ -19,6 +19,12 @@ const nextConfig = {
         port: "",
         pathname: "/ipfs/**",
       },
+      {
+        protocol: "https",
+        hostname: "purple-just-alpaca-870.mypinata.cloud",
+        port: "",
+        pathname: "/ipfs/**",
+      },
     ],
   },
 };
